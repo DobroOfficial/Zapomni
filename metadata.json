@@ -1,0 +1,6 @@
+{
+  "name": "Zapomni",
+  "description": "An offline-first, personal memory hub for securing notes, photos, and voice memos locally.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": []
+}
