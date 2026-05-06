@@ -24,6 +24,7 @@ interface MapsViewProps {
 }
 
 function MapCard({ map, index, onClick, onEdit, onDelete }: { 
+  key?: string | number,
   map: MapData, 
   index: number,
   onClick: () => void, 
@@ -403,7 +404,9 @@ export default function MapsView({ onCaptureClick, onCaptureEdit, onMapViewChang
                         preview={capture.content}
                         timestamp={timeStr}
                         mapName={selectedMap.name}
-                        onClick={() => onCaptureClick?.(capture)}
+                        onClick={() => {
+                          onCaptureClick?.(capture);
+                        }}
                         onEdit={() => onCaptureEdit?.(capture)}
                       />
                     );
@@ -418,7 +421,9 @@ export default function MapsView({ onCaptureClick, onCaptureEdit, onMapViewChang
                         timestamp={timeStr}
                         mapName={selectedMap.name}
                         hasVoice={!!capture.audioContent}
-                        onClick={() => onCaptureClick?.(capture)}
+                        onClick={() => {
+                          onCaptureClick?.(capture);
+                        }}
                         onEdit={() => onCaptureEdit?.(capture)}
                       />
                     );
@@ -432,7 +437,9 @@ export default function MapsView({ onCaptureClick, onCaptureEdit, onMapViewChang
                         caption={capture.description || "Video"}
                         timestamp={timeStr}
                         mapName={selectedMap.name}
-                        onClick={() => onCaptureClick?.(capture)}
+                        onClick={() => {
+                          onCaptureClick?.(capture);
+                        }}
                         onEdit={() => onCaptureEdit?.(capture)}
                       />
                     );
@@ -446,7 +453,9 @@ export default function MapsView({ onCaptureClick, onCaptureEdit, onMapViewChang
                         timestamp={timeStr}
                         mapName={selectedMap.name}
                         audioContent={capture.audioContent}
-                        onClick={() => onCaptureClick?.(capture)}
+                        onClick={() => {
+                          onCaptureClick?.(capture);
+                        }}
                         onEdit={() => onCaptureEdit?.(capture)}
                       />
                     );

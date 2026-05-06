@@ -53,3 +53,11 @@ export const unassignCapturesByMapId = async (mapId: string) => {
   }
   await tx.done;
 };
+
+export const clearAllData = async () => {
+  const db = await initDB();
+  const tx = db.transaction(['captures', 'maps'], 'readwrite');
+  await tx.objectStore('captures').clear();
+  await tx.objectStore('maps').clear();
+  await tx.done;
+};

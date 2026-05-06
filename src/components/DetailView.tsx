@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, ArrowLeft, Trash2, MapPin, Play, Volume2, Maximize2 } from 'lucide-react';
 import { Capture, MapData } from '../types';
+import { useLanguage } from '../contexts/LanguageContext';
 
 import VideoPlayer from './VideoPlayer';
 
@@ -14,6 +15,7 @@ interface DetailViewProps {
 }
 
 export default function DetailView({ capture, maps, onClose, onDelete, onUpdate }: DetailViewProps) {
+  const { t } = useLanguage();
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDeletingAudio, setIsDeletingAudio] = useState(false);

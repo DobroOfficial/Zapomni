@@ -39,7 +39,6 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'UPLOAD': 'UPLOAD',
     'local': 'local',
     'Active Reminders': 'Active Reminders',
-    'Categories': 'Categories',
     'Organize your reminders': 'Organize your reminders',
     'Organize your notes by creating your first category.': 'Organize your notes by creating your first category.',
     'SUN': 'SUN',
@@ -139,7 +138,12 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'This voice memo will be permanently removed from this entry. This action cannot be undone.': 'This voice memo will be permanently removed from this entry. This action cannot be undone.',
     'Remove': 'Remove',
     'Cancel': 'Cancel',
-    'Delete': 'Delete'
+    'Delete': 'Delete',
+    'Delete all data': 'Delete all data',
+    'Privacy Policy': 'Privacy Policy',
+    'Delete all data warning': 'This will permanently delete all your data. This action cannot be undone.',
+    'Confirm': 'Confirm',
+    'About': 'About'
   },
   Slovenian: {
     ZAPOMNI: "ZAPOMNI",
@@ -181,7 +185,6 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'UPLOAD': 'NALAGANJE',
     'local': 'lokalno',
     'Active Reminders': 'Aktivni opomniki',
-    'Categories': 'Kategorije',
     'Organize your reminders': 'Organizirajte svoje opomnike',
     'Organize your notes by creating your first category.': 'Organizirajte svoje zapiske tako, da ustvarite svojo prvo kategorijo.',
     'SUN': 'NED',
@@ -281,6 +284,11 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'This voice memo will be permanently removed from this entry. This action cannot be undone.': 'Ta glasovni posnetek bo trajno odstranjen iz tega zapisa. Tega dejanja ni mogoče razveljaviti.',
     'Remove': 'Odstrani',
     'Cancel': 'Prekliči',
-    'Delete': 'Izbriši'
+    'Delete': 'Izbriši',
+    'Delete all data': 'Izbriši vse podatke',
+    'Privacy Policy': 'Pravilnik o zasebnosti',
+    'Delete all data warning': 'To bo trajno izbrisalo vse vaše podatke. Tega dejanja ni mogoče razveljaviti.',
+    'Confirm': 'Potrdi',
+    'About': 'O aplikaciji'
   }
 };

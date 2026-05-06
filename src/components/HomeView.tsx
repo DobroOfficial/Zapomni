@@ -19,6 +19,14 @@ export default function HomeView({ onCaptureClick, onCaptureEdit, refreshTrigger
   const [maps, setMaps] = useState<MapData[]>([]);
   const [filter, setFilter] = useState<CaptureType | 'all'>('all');
 
+  const handleFilter = (newFilter: CaptureType | 'all') => {
+    if (newFilter === 'all') {
+      setFilter('all');
+    } else {
+      setFilter(filter === newFilter ? 'all' : newFilter);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       const [captureData, mapData] = await Promise.all([
@@ -61,25 +69,25 @@ export default function HomeView({ onCaptureClick, onCaptureEdit, refreshTrigger
       {/* Stats row */}
       <div className="flex gap-2">
         <button 
-          onClick={() => setFilter(filter === 'note' ? 'all' : 'note')}
+          onClick={() => handleFilter('note')}
           className={`flex-1 ${filter === 'note' ? 'bg-note-pill text-note-yellow ring-1 ring-note-yellow/30' : (stats.note > 0 ? 'bg-note-pill/40 text-note-yellow' : 'bg-[#141414] text-muted-text')} text-center py-2 rounded-[99px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95`}
         >
           {stats.note} Notes
         </button>
         <button 
-          onClick={() => setFilter(filter === 'photo' ? 'all' : 'photo')}
+          onClick={() => handleFilter('photo')}
           className={`flex-1 ${filter === 'photo' ? 'bg-photo-pill text-photo-amber ring-1 ring-photo-amber/30' : (stats.photo > 0 ? 'bg-photo-pill/40 text-photo-amber' : 'bg-[#141414] text-muted-text')} text-center py-2 rounded-[99px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95`}
         >
           {stats.photo} Photos
         </button>
         <button 
-          onClick={() => setFilter(filter === 'voice' ? 'all' : 'voice')}
+          onClick={() => handleFilter('voice')}
           className={`flex-1 ${filter === 'voice' ? 'bg-voice-pill text-voice-orange ring-1 ring-voice-orange/30' : (stats.voice > 0 ? 'bg-voice-pill/40 text-voice-orange' : 'bg-[#141414] text-muted-text')} text-center py-2 rounded-[99px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95`}
         >
           {stats.voice} Voices
         </button>
         <button 
-          onClick={() => setFilter(filter === 'video' ? 'all' : 'video')}
+          onClick={() => handleFilter('video')}
           className={`flex-1 ${filter === 'video' ? 'bg-accent/20 text-accent ring-1 ring-accent/30' : (stats.video > 0 ? 'bg-accent/10 text-accent' : 'bg-[#141414] text-muted-text')} text-center py-2 rounded-[99px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95`}
         >
           {stats.video} Videos
@@ -89,31 +97,31 @@ export default function HomeView({ onCaptureClick, onCaptureEdit, refreshTrigger
       {/* Filters */}
       <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 custom-scrollbar">
         <button 
-          onClick={() => setFilter('all')}
+          onClick={() => handleFilter('all')}
           className={`flex-shrink-0 px-5 py-1.5 rounded-[99px] text-[10px] font-bold uppercase transition-colors ${filter === 'all' ? 'bg-accent text-black' : 'bg-[#141414] text-muted-text'}`}
         >
           {t('All')}
         </button>
         <button 
-          onClick={() => setFilter(filter === 'note' ? 'all' : 'note')}
+          onClick={() => handleFilter('note')}
           className={`flex-shrink-0 px-5 py-1.5 rounded-[99px] text-[10px] font-bold uppercase transition-colors ${filter === 'note' ? 'bg-note-pill text-note-yellow' : 'bg-[#141414] text-muted-text'}`}
         >
           {t('Notes')}
         </button>
         <button 
-          onClick={() => setFilter(filter === 'photo' ? 'all' : 'photo')}
+          onClick={() => handleFilter('photo')}
           className={`flex-shrink-0 px-5 py-1.5 rounded-[99px] text-[10px] font-bold uppercase transition-colors ${filter === 'photo' ? 'bg-photo-pill text-photo-amber' : 'bg-[#141414] text-muted-text'}`}
         >
           {t('Photos')}
         </button>
         <button 
-          onClick={() => setFilter(filter === 'voice' ? 'all' : 'voice')}
+          onClick={() => handleFilter('voice')}
           className={`flex-shrink-0 px-5 py-1.5 rounded-[99px] text-[10px] font-bold uppercase transition-colors ${filter === 'voice' ? 'bg-voice-pill text-voice-orange' : 'bg-[#141414] text-muted-text'}`}
         >
           {t('Voices')}
         </button>
         <button 
-          onClick={() => setFilter(filter === 'video' ? 'all' : 'video')}
+          onClick={() => handleFilter('video')}
           className={`flex-shrink-0 px-5 py-1.5 rounded-[99px] text-[10px] font-bold uppercase transition-colors ${filter === 'video' ? 'bg-accent/20 text-accent' : 'bg-[#141414] text-muted-text'}`}
         >
           {t('Videos')}
@@ -132,7 +140,9 @@ export default function HomeView({ onCaptureClick, onCaptureEdit, refreshTrigger
                 preview={capture.content}
                 timestamp={dateStr}
                 mapName={getMapName(capture.mapId)}
-                onClick={() => onCaptureClick(capture)}
+                onClick={() => {
+                  onCaptureClick(capture);
+                }}
                 onEdit={() => onCaptureEdit(capture)}
               />
             );
@@ -147,7 +157,9 @@ export default function HomeView({ onCaptureClick, onCaptureEdit, refreshTrigger
                 timestamp={dateStr}
                 mapName={getMapName(capture.mapId)}
                 hasVoice={!!capture.audioContent}
-                onClick={() => onCaptureClick(capture)}
+                onClick={() => {
+                  onCaptureClick(capture);
+                }}
                 onEdit={() => onCaptureEdit(capture)}
               />
             );
@@ -161,7 +173,9 @@ export default function HomeView({ onCaptureClick, onCaptureEdit, refreshTrigger
                 caption={capture.description || t('Video')}
                 timestamp={dateStr}
                 mapName={getMapName(capture.mapId)}
-                onClick={() => onCaptureClick(capture)}
+                onClick={() => {
+                  onCaptureClick(capture);
+                }}
                 onEdit={() => onCaptureEdit(capture)}
               />
             );
@@ -175,7 +189,9 @@ export default function HomeView({ onCaptureClick, onCaptureEdit, refreshTrigger
                 timestamp={dateStr}
                 mapName={getMapName(capture.mapId)}
                 audioContent={capture.audioContent}
-                onClick={() => onCaptureClick(capture)}
+                onClick={() => {
+                  onCaptureClick(capture);
+                }}
                 onEdit={() => onCaptureEdit(capture)}
               />
             );

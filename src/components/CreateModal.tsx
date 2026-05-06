@@ -433,7 +433,7 @@ export default function CreateModal({ isOpen, onClose, onSave, editCapture, init
                   {editCapture ? t('Edit Reminder') : t('New Reminder')}
                 </h2>
                 {editCapture && onDelete && (
-                  <button onClick={() => onDelete(editCapture.id)} className="p-1.5 text-red-500 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-colors active:scale-95" title={t('Delete')}>
+                  <button onClick={() => { onDelete(editCapture.id); }} className="p-1.5 text-red-500 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-colors active:scale-95" title={t('Delete')}>
                     <Trash2 size={16} />
                   </button>
                 )}

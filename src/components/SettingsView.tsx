@@ -1,9 +1,10 @@
-import { Moon, Sun, Download, Upload, Database, Camera, Video, ChevronRight, Languages, Heart, Star, Mail } from 'lucide-react';
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
-import { getAllCaptures, getAllMaps, addCapture, addMap } from '../services/db';
+import { Moon, Sun, Download, Upload, Database, Camera, Video, ChevronRight, Languages, Heart, Star, Mail, Trash2, Shield } from 'lucide-react';
+import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import { getAllCaptures, getAllMaps, addCapture, addMap, clearAllData } from '../services/db';
 import PhotoSettingsView from './PhotoSettingsView';
 import VideoSettingsView from './VideoSettingsView';
 import LanguageSettingsView from './LanguageSettingsView';
+import PrivacyPolicyView from './PrivacyPolicyView';
 import { useLanguage } from '../contexts/LanguageContext';
 
 export default function SettingsView({ theme, setTheme }: { theme: string; setTheme: Dispatch<SetStateAction<string>> }) {
@@ -17,7 +18,32 @@ export default function SettingsView({ theme, setTheme }: { theme: string; setTh
   const [videoFrames, setVideoFrames] = useState(localStorage.getItem('videoFrames') || '60fps');
   const [videoFormat, setVideoFormat] = useState(localStorage.getItem('videoFormat') || 'MP4');
   
-  const [activeSubTab, setActiveSubTab] = useState<'main' | 'photo' | 'video' | 'language'>('main');
+  const [activeSubTab, setActiveSubTab] = useState<'main' | 'photo' | 'video' | 'language' | 'privacy'>('main');
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteCooldown, setDeleteCooldown] = useState(0);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isDeleteModalOpen && deleteCooldown > 0) {
+      timer = setTimeout(() => setDeleteCooldown(deleteCooldown - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [isDeleteModalOpen, deleteCooldown]);
+
+  const handleDeleteAllData = async () => {
+    try {
+      await clearAllData();
+      setIsDeleteModalOpen(false);
+      window.location.reload();
+    } catch (err) {
+      console.error("Failed to delete all data", err);
+    }
+  };
+
+  const openDeleteModal = () => {
+    setDeleteCooldown(5);
+    setIsDeleteModalOpen(true);
+  };
 
   useEffect(() => {
     const calculateStorage = async () => {
@@ -111,6 +137,10 @@ export default function SettingsView({ theme, setTheme }: { theme: string; setTh
     return <LanguageSettingsView onBack={() => setActiveSubTab('main')} theme={theme} />;
   }
 
+  if (activeSubTab === 'privacy') {
+    return <PrivacyPolicyView onBack={() => setActiveSubTab('main')} theme={theme} />;
+  }
+
   return (
     <div className="p-6 flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div>
@@ -175,16 +205,7 @@ export default function SettingsView({ theme, setTheme }: { theme: string; setTh
           <ChevronRight size={16} className="text-muted-text" />
         </button>
 
-        <button 
-          onClick={() => {
-            import('../services/notificationService').then(({ notificationService }) => {
-              notificationService.sendNotification(t('Test Notification'), t('This is a simulated push notification'));
-            });
-          }}
-          className="w-full h-14 text-left py-4 px-4 rounded-[16px] bg-accent/10 border border-accent/20 text-accent hover:bg-accent/20 transition-colors flex items-center justify-center font-bold text-[10px] uppercase tracking-widest"
-        >
-          {t('Test Notification')}
-        </button>
+
       </div>
 
       {/* Data Management */}
@@ -226,6 +247,16 @@ export default function SettingsView({ theme, setTheme }: { theme: string; setTh
           <span className="text-[10px] text-accent opacity-0 group-hover:opacity-100 transition-opacity">{t('UPLOAD')}</span>
         </button>
         <input type="file" ref={fileInputRef} onChange={handleImportData} className="hidden" accept=".json" />
+        
+        <button 
+          onClick={openDeleteModal}
+          className="w-full h-14 text-left py-4 px-4 rounded-[16px] bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20 hover:border-red-500/30 transition-colors flex items-center justify-between group mt-2"
+        >
+          <div className="flex items-center gap-3">
+            <Trash2 size={16} />
+            <span className="font-bold tracking-tight">{t('Delete all data')}</span>
+          </div>
+        </button>
       </div>
 
       {/* Language Settings */}
@@ -277,6 +308,23 @@ export default function SettingsView({ theme, setTheme }: { theme: string; setTh
         </a>
       </div>
 
+      {/* About */}
+      <div className="flex flex-col gap-2 relative mt-6">
+        <h3 className="text-[12px] font-bold text-muted-text uppercase tracking-widest px-4 mb-2">{t('About')}</h3>
+        <button 
+          onClick={() => setActiveSubTab('privacy')}
+          className="w-full text-left py-4 px-4 rounded-[16px] bg-[#141414] border border-white/5 hover:bg-white/5 transition-colors flex items-center justify-between group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-[10px] bg-white/5 flex items-center justify-center">
+              <Shield size={16} />
+            </div>
+            <span className="font-semibold text-white">{t('Privacy Policy')}</span>
+          </div>
+          <ChevronRight size={16} className="text-muted-text" />
+        </button>
+      </div>
+
       {/* Footer Info */}
       <div className="flex flex-col items-center gap-1 mt-auto pt-2 text-muted-text">
         <span className="text-[10px] font-bold uppercase tracking-widest">{t('Version 1.0.0')}</span>
@@ -289,6 +337,35 @@ export default function SettingsView({ theme, setTheme }: { theme: string; setTh
           {t('Open Source on GitHub')}
         </a>
       </div>
+
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#141414] border border-[#222] rounded-[24px] p-6 max-w-sm w-full flex flex-col items-center text-center gap-4 animate-in fade-in zoom-in-95 duration-200">
+            <div className="w-12 h-12 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center">
+              <Trash2 size={24} />
+            </div>
+            <h3 className="text-xl font-bold uppercase tracking-tight text-white">{t('ARE YOU SURE?')}</h3>
+            <p className="text-sm text-red-500 font-medium">
+              {t('Delete all data warning')}
+            </p>
+            <div className="flex flex-col gap-2 w-full mt-2">
+              <button
+                disabled={deleteCooldown > 0}
+                onClick={handleDeleteAllData}
+                className="w-full py-4 bg-red-500 text-white rounded-[16px] font-bold text-[10px] uppercase tracking-widest active:scale-95 transition-all disabled:opacity-50 disabled:active:scale-100"
+              >
+                {deleteCooldown > 0 ? `${t('Confirm')} (${deleteCooldown})` : t('Confirm')}
+              </button>
+              <button
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="w-full py-4 text-muted-text font-bold text-[10px] uppercase tracking-widest hover:text-white"
+              >
+                {t('Cancel')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

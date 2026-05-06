@@ -121,7 +121,9 @@ export default function App() {
             <div className="w-2 h-2 bg-accent rounded-full -mb-1"></div>
           </div>
           <button 
-            onClick={() => setActiveTab('Settings')}
+            onClick={() => {
+              setActiveTab('Settings');
+            }}
             className={`p-2 rounded-xl border transition-all ${activeTab === 'Settings' ? 'bg-accent text-black border-accent' : 'bg-white/5 border-white/10 text-muted-text hover:bg-white/10'}`}
           >
             <Settings size={20} />
@@ -132,12 +134,16 @@ export default function App() {
       </main>
   
         {/* FAB */}
-        <button 
-          onClick={() => setIsCreateOpen(true)}
-          className="fixed bottom-[88px] right-6 w-14 h-14 bg-accent text-black rounded-full flex items-center justify-center z-50 shadow-[0_10px_30px_rgba(0,0,0,0.5),0_0_20px_rgba(255,208,0,0.3)] active:scale-90 transition-transform"
-        >
-          <Plus size={28} strokeWidth={3} />
-        </button>
+        {activeTab !== 'Settings' && (
+          <button 
+            onClick={() => {
+              setIsCreateOpen(true);
+            }}
+            className="fixed bottom-[88px] right-6 w-14 h-14 bg-accent text-black rounded-full flex items-center justify-center z-50 shadow-[0_10px_30px_rgba(0,0,0,0.5),0_0_20px_rgba(255,208,0,0.3)] active:scale-90 transition-transform"
+          >
+            <Plus size={28} strokeWidth={3} />
+          </button>
+        )}
   
         {/* Navigation */}
         <nav className="fixed bottom-0 left-0 right-0 h-[72px] border-t border-white/5 bg-nav-bg/80 backdrop-blur-xl grid grid-cols-4 items-center px-4 safe-area-bottom z-[100]">
