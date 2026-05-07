@@ -18,16 +18,16 @@ export default function PrivacyPolicyView({ onBack, theme }: PrivacyPolicyViewPr
   }, []);
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-background text-text-main custom-scrollbar">
+    <div className={`flex-1 flex flex-col min-h-0 bg-transparent custom-scrollbar ${theme === 'light' ? 'text-text-main' : 'text-white'}`}>
       {/* Header */}
-      <div className="h-[60px] flex items-center px-4 shrink-0 border-b border-white/5 relative z-10 bg-background">
+      <div className="h-[60px] flex items-center px-4 shrink-0 border-b border-white/5 relative z-10 bg-transparent">
         <button 
           onClick={onBack}
-          className={`w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition-transform ${theme === 'light' ? 'text-text-main' : 'text-white'}`}
+          className={`w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition-transform ${theme === 'light' ? 'text-text-main hover:bg-black/5' : 'text-white hover:bg-white/5'}`}
         >
           <ArrowLeft size={24} />
         </button>
-        <span className="font-bold ml-2">{t('Privacy Policy')}</span>
+        <span className={`font-bold ml-2 ${theme === 'light' ? 'text-text-main' : 'text-white'}`}>{t('Privacy Policy')}</span>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-8 select-text">

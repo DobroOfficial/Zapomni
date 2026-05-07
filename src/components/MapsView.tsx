@@ -12,6 +12,7 @@ import VideoCard from './VideoCard';
 import { useLanguage } from '../contexts/LanguageContext';
 import { MAP_ICONS, getIconComponent } from '../utils/mapIcons';
 import { useLongPress } from '../hooks/useLongPress';
+import { useBackHandler } from '../hooks/useBackHandler';
 
 const PRESET_COLORS = [
   '#FFD700', '#FF4500', '#1E90FF', '#32CD32', '#9370DB', '#FF69B4', '#00CED1'
@@ -94,6 +95,13 @@ export default function MapsView({ onCaptureClick, onCaptureEdit, onMapViewChang
   const [deletingMap, setDeletingMap] = useState<MapData | null>(null);
   const [deleteStep, setDeleteStep] = useState<number>(0);
   const [cooldown, setCooldown] = useState(0);
+
+  useBackHandler(selectedMap !== null, () => setSelectedMap(null), 'map-view');
+  useBackHandler(isAdding || editingMapId !== null, () => {
+    setIsAdding(false);
+    setEditingMapId(null);
+  }, 'map-edit');
+  useBackHandler(deletingMap !== null, () => setDeletingMap(null), 'map-delete');
 
   useEffect(() => {
     let timer: any;

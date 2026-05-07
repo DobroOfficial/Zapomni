@@ -7,6 +7,7 @@ import { getAllMaps } from '../services/db';
 import VideoPlayer from './VideoPlayer';
 import { useLanguage } from '../contexts/LanguageContext';
 import { MAP_ICONS, getIconComponent } from '../utils/mapIcons';
+import { useBackHandler } from '../hooks/useBackHandler';
 
 interface CreateModalProps {
   isOpen: boolean;
@@ -31,6 +32,8 @@ export default function CreateModal({ isOpen, onClose, onSave, editCapture, init
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
   const [isRecording, setIsRecording] = useState(false);
   const [isRecordingVideo, setIsRecordingVideo] = useState(false);
+  
+  useBackHandler(isCameraActive, () => setIsCameraActive(false), 'create-modal-camera');
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -588,17 +591,38 @@ export default function CreateModal({ isOpen, onClose, onSave, editCapture, init
                       {t('Library')}
                       <input 
                         type="file" 
-                        accept="image/*,video/*" 
+                        accept="image/*,video/*,.heic,.heif" 
                         className="hidden" 
-                        onChange={(e) => {
+                        onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (file) {
                             if (file.type.startsWith('video/')) {
                               setType('video');
+                              handleFileChange(e);
+                            } else if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) {
+                              setType('photo');
+                              try {
+                                const heic2any = (await import('heic2any')).default;
+                                const convertedBlob = await heic2any({
+                                  blob: file,
+                                  toType: "image/jpeg",
+                                });
+                                // Handle single blob or array of blobs
+                                const actualBlob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+                                
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                  setContent(reader.result as string);
+                                };
+                                reader.readAsDataURL(actualBlob);
+                              } catch (err) {
+                                console.error('Error converting HEIC file:', err);
+                                handleFileChange(e); // Fallback
+                              }
                             } else {
                               setType('photo');
+                              handleFileChange(e);
                             }
-                            handleFileChange(e);
                           }
                         }}
                       />

@@ -6,6 +6,7 @@ import VideoSettingsView from './VideoSettingsView';
 import LanguageSettingsView from './LanguageSettingsView';
 import PrivacyPolicyView from './PrivacyPolicyView';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useBackHandler } from '../hooks/useBackHandler';
 
 export default function SettingsView({ theme, setTheme }: { theme: string; setTheme: Dispatch<SetStateAction<string>> }) {
   const { t } = useLanguage();
@@ -21,6 +22,9 @@ export default function SettingsView({ theme, setTheme }: { theme: string; setTh
   const [activeSubTab, setActiveSubTab] = useState<'main' | 'photo' | 'video' | 'language' | 'privacy'>('main');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteCooldown, setDeleteCooldown] = useState(0);
+
+  useBackHandler(activeSubTab !== 'main', () => setActiveSubTab('main'), `settings-${activeSubTab}`);
+  useBackHandler(isDeleteModalOpen, () => setIsDeleteModalOpen(false), 'settings-delete');
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -276,7 +280,7 @@ export default function SettingsView({ theme, setTheme }: { theme: string; setTh
 
       <div className="bg-card-surface border border-[#222] rounded-[24px] p-6 flex flex-col gap-2">
         <label className="text-[10px] font-bold text-muted-text uppercase tracking-widest px-1 mb-2">{t('Support & Donations')}</label>
-        <button className="w-full text-left py-4 px-4 rounded-[16px] bg-yellow-500/10 border border-yellow-500/20 hover:bg-yellow-500/20 hover:border-yellow-500/30 transition-colors flex items-center justify-between group">
+        <a href="https://ko-fi.com/dobroofficial" target="_blank" rel="noopener noreferrer" className="w-full text-left py-4 px-4 rounded-[16px] bg-yellow-500/10 border border-yellow-500/20 hover:bg-yellow-500/20 hover:border-yellow-500/30 transition-colors flex items-center justify-between group">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-[10px] bg-yellow-500 text-black flex items-center justify-center">
               <Heart size={16} fill="currentColor" />
@@ -287,7 +291,7 @@ export default function SettingsView({ theme, setTheme }: { theme: string; setTh
             </div>
           </div>
           <span className="text-[10px] text-yellow-500 opacity-0 group-hover:opacity-100 transition-all translate-x-2 font-bold">{t('EXTERNAL LINK')}</span>
-        </button>
+        </a>
         <a href="https://play.google.com/store/apps/details?id=your.package.name" target="_blank" rel="noopener noreferrer" className="w-full text-left py-4 px-4 rounded-[16px] bg-black/20 border border-white/5 text-white hover:bg-black/40 transition-colors flex items-center justify-between group">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-[10px] bg-white/10 text-white flex items-center justify-center">
@@ -327,9 +331,9 @@ export default function SettingsView({ theme, setTheme }: { theme: string; setTh
 
       {/* Footer Info */}
       <div className="flex flex-col items-center gap-1 mt-auto pt-2 text-muted-text">
-        <span className="text-[10px] font-bold uppercase tracking-widest">{t('Version 1.0.0')}</span>
+        <span className="text-[10px] font-bold uppercase tracking-widest">{t('Version 1.0.2')}</span>
         <a 
-          href="https://github.com/your-username/your-repo" 
+          href="https://github.com/DobroOfficial/Zapomni" 
           target="_blank" 
           rel="noopener noreferrer" 
           className="text-[10px] font-bold uppercase tracking-widest hover:text-accent transition-colors"

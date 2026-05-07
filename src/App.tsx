@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Home, Folder, Calendar, Search, Settings, Plus } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { motion, AnimatePresence } from 'motion/react';
@@ -18,10 +18,12 @@ import { useLanguage } from './contexts/LanguageContext';
 import { Capture, CaptureType, MapData } from './types';
 import { addCapture, deleteCapture, getAllMaps, getAllCaptures } from './services/db';
 import { notificationService } from './services/notificationService';
+import { useBackHandler } from './hooks/useBackHandler';
 
 export default function App() {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('Home');
+  const [previousTab, setPreviousTab] = useState('Home');
   const [selectedCapture, setSelectedCapture] = useState<Capture | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingCapture, setEditingCapture] = useState<Capture | null>(null);
@@ -31,6 +33,32 @@ export default function App() {
   const [theme, setTheme] = useState('dark');
   const [globalActiveMapId, setGlobalActiveMapId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ title: string; body: string } | null>(null);
+
+  const handleTabChange = (tab: string) => {
+    if (tab === activeTab) return;
+    setPreviousTab(activeTab);
+    setActiveTab(tab);
+    window.history.pushState({ type: 'tab', tab }, '');
+  };
+
+  useEffect(() => {
+    window.history.replaceState({ type: 'tab', tab: 'Home' }, '');
+    
+    const handlePopState = (e: PopStateEvent) => {
+      const state = e.state;
+      if (state && state.type === 'tab') {
+        setActiveTab(state.tab);
+        setIsCreateOpen(false);
+        setSelectedCapture(null);
+      }
+    };
+    
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+  
+  useBackHandler(isCreateOpen, () => setIsCreateOpen(false), 'create-modal');
+  useBackHandler(selectedCapture !== null, () => setSelectedCapture(null), 'detail-view');
 
   useEffect(() => {
     loadMaps();
@@ -121,9 +149,7 @@ export default function App() {
             <div className="w-2 h-2 bg-accent rounded-full -mb-1"></div>
           </div>
           <button 
-            onClick={() => {
-              setActiveTab('Settings');
-            }}
+            onClick={() => handleTabChange('Settings')}
             className={`p-2 rounded-xl border transition-all ${activeTab === 'Settings' ? 'bg-accent text-black border-accent' : 'bg-white/5 border-white/10 text-muted-text hover:bg-white/10'}`}
           >
             <Settings size={20} />
@@ -158,7 +184,7 @@ export default function App() {
               <button 
                 key={tab.name}
                 onClick={() => {
-                  setActiveTab(tab.tab || tab.name);
+                  handleTabChange(tab.tab || tab.name);
                   setSelectedCapture(null);
                 }}
                 className={`flex flex-col items-center justify-center gap-1 transition-all ${

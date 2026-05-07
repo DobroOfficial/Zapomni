@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, ArrowLeft, Trash2, MapPin, Play, Volume2, Maximize2 } from 'lucide-react';
 import { Capture, MapData } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useBackHandler } from '../hooks/useBackHandler';
 
 import VideoPlayer from './VideoPlayer';
 
@@ -21,6 +22,10 @@ export default function DetailView({ capture, maps, onClose, onDelete, onUpdate 
   const [isDeletingAudio, setIsDeletingAudio] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   
+  useBackHandler(isFullScreen, () => setIsFullScreen(false), 'detail-fullscreen');
+  useBackHandler(isDeleting, () => setIsDeleting(false), 'detail-deleting');
+  useBackHandler(isDeletingAudio, () => setIsDeletingAudio(false), 'detail-deleting-audio');
+
   if (!capture) return null;
 
   const playAudio = () => {
