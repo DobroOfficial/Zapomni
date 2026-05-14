@@ -28,7 +28,7 @@ export default function VideoCard({ videoSrc, title, caption, timestamp, mapName
     >
       <div className="relative w-full h-[108px] bg-black flex items-center justify-center">
         <video 
-          src={videoSrc} 
+          src={`${videoSrc}#t=0.001`} 
           playsInline 
           muted 
           preload="metadata"

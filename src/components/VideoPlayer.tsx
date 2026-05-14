@@ -99,7 +99,7 @@ export default function VideoPlayer({ src, title, previewMode = false }: VideoPl
     >
       <video
         ref={videoRef}
-        src={src}
+        src={`${src}#t=0.001`}
         playsInline
         onTimeUpdate={handleProgress}
         onLoadedMetadata={handleLoadedMetadata}

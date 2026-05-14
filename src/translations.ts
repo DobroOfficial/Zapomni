@@ -57,7 +57,7 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'Send Feedback': 'Send Feedback',
     'Donations': 'Donations',
     'EXTERNAL LINK': 'EXTERNAL LINK',
-    'Version 1.0.2': 'Version 1.0.2',
+    'Version 1.0.3': 'Version 1.0.3',
     'Open Source on GitHub': 'Open Source on GitHub',
     'Entry Title': 'Entry Title',
     'Write something...': 'Write something...',
@@ -141,6 +141,7 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'Delete': 'Delete',
     'Delete all data': 'Delete all data',
     'Privacy Policy': 'Privacy Policy',
+    'About Us': 'About Us',
     'Delete all data warning': 'This will permanently delete all your data. This action cannot be undone.',
     'Confirm': 'Confirm',
     'About': 'About'
@@ -203,7 +204,7 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'Send Feedback': 'Pošljite povratne informacije',
     'Donations': 'Donacije',
     'EXTERNAL LINK': 'ZUNANJA POVEZAVA',
-    'Version 1.0.2': 'Različica 1.0.2',
+    'Version 1.0.3': 'Različica 1.0.3',
     'Open Source on GitHub': 'Odprta koda na GitHubu',
     'Entry Title': 'Naslov vnosa',
     'Write something...': 'Napišite nekaj...',
@@ -287,6 +288,7 @@ export const translations: { [key: string]: { [key: string]: string } } = {
     'Delete': 'Izbriši',
     'Delete all data': 'Izbriši vse podatke',
     'Privacy Policy': 'Pravilnik o zasebnosti',
+    'About Us': 'O nas',
     'Delete all data warning': 'To bo trajno izbrisalo vse vaše podatke. Tega dejanja ni mogoče razveljaviti.',
     'Confirm': 'Potrdi',
     'About': 'O aplikaciji'

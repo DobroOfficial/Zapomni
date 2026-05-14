@@ -1,10 +1,11 @@
-import { Moon, Sun, Download, Upload, Database, Camera, Video, ChevronRight, Languages, Heart, Star, Mail, Trash2, Shield } from 'lucide-react';
+import { Moon, Sun, Download, Upload, Database, Camera, Video, ChevronRight, Languages, Heart, Star, Mail, Trash2, Shield, Info } from 'lucide-react';
 import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import { getAllCaptures, getAllMaps, addCapture, addMap, clearAllData } from '../services/db';
 import PhotoSettingsView from './PhotoSettingsView';
 import VideoSettingsView from './VideoSettingsView';
 import LanguageSettingsView from './LanguageSettingsView';
 import PrivacyPolicyView from './PrivacyPolicyView';
+import AboutUsView from './AboutUsView';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useBackHandler } from '../hooks/useBackHandler';
 
@@ -19,7 +20,7 @@ export default function SettingsView({ theme, setTheme }: { theme: string; setTh
   const [videoFrames, setVideoFrames] = useState(localStorage.getItem('videoFrames') || '60fps');
   const [videoFormat, setVideoFormat] = useState(localStorage.getItem('videoFormat') || 'MP4');
   
-  const [activeSubTab, setActiveSubTab] = useState<'main' | 'photo' | 'video' | 'language' | 'privacy'>('main');
+  const [activeSubTab, setActiveSubTab] = useState<'main' | 'photo' | 'video' | 'language' | 'privacy' | 'about'>('main');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteCooldown, setDeleteCooldown] = useState(0);
 
@@ -145,6 +146,10 @@ export default function SettingsView({ theme, setTheme }: { theme: string; setTh
     return <PrivacyPolicyView onBack={() => setActiveSubTab('main')} theme={theme} />;
   }
 
+  if (activeSubTab === 'about') {
+    return <AboutUsView onBack={() => setActiveSubTab('main')} theme={theme} />;
+  }
+
   return (
     <div className="p-6 flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div>
@@ -179,37 +184,6 @@ export default function SettingsView({ theme, setTheme }: { theme: string; setTh
             {t('Light')}
           </button>
         </div>
-      </div>
-
-      {/* Capture Settings */}
-      <div className="bg-card-surface border border-[#222] rounded-[24px] p-6 flex flex-col gap-4">
-        <label className="text-[10px] font-bold text-muted-text uppercase tracking-widest px-1">{t('Capture Settings')}</label>
-
-        {/* Photo Settings */}
-        <button 
-          onClick={() => setActiveSubTab('photo')}
-          className="w-full h-14 text-left py-4 px-4 rounded-[16px] bg-black/20 border border-white/5 text-white hover:bg-black/40 transition-colors flex items-center justify-between group"
-        >
-          <div className="flex items-center gap-3">
-            <Camera size={16} />
-            <span className={`${theme === 'light' ? 'text-text-main' : 'text-white'}`}>{t('Photo Settings')}</span>
-          </div>
-          <ChevronRight size={16} className="text-muted-text" />
-        </button>
-
-        {/* Video Settings */}
-        <button 
-          onClick={() => setActiveSubTab('video')}
-          className="w-full h-14 text-left py-4 px-4 rounded-[16px] bg-black/20 border border-white/5 text-white hover:bg-black/40 transition-colors flex items-center justify-between group"
-        >
-          <div className="flex items-center gap-3">
-            <Video size={16} />
-            <span className={`${theme === 'light' ? 'text-text-main' : 'text-white'}`}>{t('Video Settings')}</span>
-          </div>
-          <ChevronRight size={16} className="text-muted-text" />
-        </button>
-
-
       </div>
 
       {/* Data Management */}
@@ -327,11 +301,24 @@ export default function SettingsView({ theme, setTheme }: { theme: string; setTh
           </div>
           <ChevronRight size={16} className="text-muted-text" />
         </button>
+
+        <button 
+          onClick={() => setActiveSubTab('about')}
+          className="w-full text-left py-4 px-4 rounded-[16px] bg-[#141414] border border-white/5 hover:bg-white/5 transition-colors flex items-center justify-between group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-[10px] bg-white/5 flex items-center justify-center">
+              <Info size={16} />
+            </div>
+            <span className="font-semibold text-white">{t('About Us')}</span>
+          </div>
+          <ChevronRight size={16} className="text-muted-text" />
+        </button>
       </div>
 
       {/* Footer Info */}
       <div className="flex flex-col items-center gap-1 mt-auto pt-2 text-muted-text">
-        <span className="text-[10px] font-bold uppercase tracking-widest">{t('Version 1.0.2')}</span>
+        <span className="text-[10px] font-bold uppercase tracking-widest">{t('Version 1.0.3')}</span>
         <a 
           href="https://github.com/DobroOfficial/Zapomni" 
           target="_blank" 
