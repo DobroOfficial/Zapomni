@@ -58,8 +58,8 @@ export default function PrivacyPolicyView({ onBack, theme }: PrivacyPolicyViewPr
           </h3>
           <p className="text-sm text-text-main leading-relaxed">
             {language === 'Slovenian'
-              ? 'Zapomni razvija in vzdržuje DobroOfficial (v nadaljevanju "mi" ali "naš"). To aplikacijo smo izdelali, da bi ljudem pomagali pomniti stvari — nič več.'
-              : 'Zapomni is developed and maintained by DobroOfficial (referred to as "we", "us", or "our"). We built this app to help people remember things — nothing more.'}
+              ? 'Zapomni razvija in vzdržuje DobroOfficial (v nadaljevanju "mi" ali "naš"). To aplikacijo smo izdelali, da bi ljudem pomagali pomniti stvari - nič več.'
+              : 'Zapomni is developed and maintained by DobroOfficial (referred to as "we", "us", or "our"). We built this app to help people remember things - nothing more.'}
           </p>
         </section>
 
@@ -97,14 +97,14 @@ export default function PrivacyPolicyView({ onBack, theme }: PrivacyPolicyViewPr
           </h3>
           <p className="text-sm text-text-main leading-relaxed">
             {language === 'Slovenian'
-              ? 'Zapomni lahko zahteva naslednja dovoljenja naprave. Ta se uporabljajo samo za delovanje funkcij znotraj aplikacije — nobeni podatki se ne pošiljajo nam:'
-              : 'Zapomni may request the following device permissions. These are used only to power features inside the app — no data is sent to us:'}
+              ? 'Zapomni lahko zahteva naslednja dovoljenja naprave. Ta se uporabljajo samo za delovanje funkcij znotraj aplikacije - nobeni podatki se ne pošiljajo nam:'
+              : 'Zapomni may request the following device permissions. These are used only to power features inside the app - no data is sent to us:'}
           </p>
           <ul className="space-y-2 text-sm text-text-main ml-2">
-            <li><strong>{language === 'Slovenian' ? 'Kamera' : 'Camera'}</strong> — {language === 'Slovenian' ? 'za dodajanje fotografij k vašim beležkam' : 'to let you attach photos to your notes'}</li>
-            <li><strong>{language === 'Slovenian' ? 'Mikrofon' : 'Microphone'}</strong> — {language === 'Slovenian' ? 'za snemanje glasovnih opomnikov' : 'to let you record voice memos'}</li>
-            <li><strong>{language === 'Slovenian' ? 'Shramba' : 'Storage'}</strong> — {language === 'Slovenian' ? 'za lokalno shranjevanje in nalaganje vaših beležk in medijev' : 'to save and load your notes and media locally'}</li>
-            <li><strong>{language === 'Slovenian' ? 'Obvestila' : 'Notifications'}</strong> — {language === 'Slovenian' ? 'za dostavo vaših koledarskih opomnikov' : 'to deliver your calendar reminders'}</li>
+            <li><strong>{language === 'Slovenian' ? 'Kamera' : 'Camera'}</strong> - {language === 'Slovenian' ? 'za dodajanje fotografij k vašim beležkam' : 'to let you attach photos to your notes'}</li>
+            <li><strong>{language === 'Slovenian' ? 'Mikrofon' : 'Microphone'}</strong> - {language === 'Slovenian' ? 'za snemanje glasovnih opomnikov' : 'to let you record voice memos'}</li>
+            <li><strong>{language === 'Slovenian' ? 'Shramba' : 'Storage'}</strong> - {language === 'Slovenian' ? 'za lokalno shranjevanje in nalaganje vaših beležk in medijev' : 'to save and load your notes and media locally'}</li>
+            <li><strong>{language === 'Slovenian' ? 'Obvestila' : 'Notifications'}</strong> - {language === 'Slovenian' ? 'za dostavo vaših koledarskih opomnikov' : 'to deliver your calendar reminders'}</li>
           </ul>
         </section>
 

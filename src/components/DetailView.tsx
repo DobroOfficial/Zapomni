@@ -17,12 +17,12 @@ interface DetailViewProps {
 
 export default function DetailView({ capture, maps, onClose, onDelete, onUpdate }: DetailViewProps) {
   const { t } = useLanguage();
-  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [fullScreenImage, setFullScreenImage] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDeletingAudio, setIsDeletingAudio] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   
-  useBackHandler(isFullScreen, () => setIsFullScreen(false), 'detail-fullscreen');
+  useBackHandler(!!fullScreenImage, () => setFullScreenImage(null), 'detail-fullscreen');
   useBackHandler(isDeleting, () => setIsDeleting(false), 'detail-deleting');
   useBackHandler(isDeletingAudio, () => setIsDeletingAudio(false), 'detail-deleting-audio');
 
@@ -86,7 +86,7 @@ export default function DetailView({ capture, maps, onClose, onDelete, onUpdate 
           {capture.type === 'photo' && (
             <div 
               className="mb-6 rounded-[24px] overflow-hidden border border-[#222] relative group cursor-pointer active:scale-[0.99] transition-transform"
-              onClick={() => setIsFullScreen(true)}
+              onClick={() => setFullScreenImage(capture.content)}
             >
               <img src={capture.content} alt={capture.title} className="w-full h-auto" />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
@@ -152,6 +152,66 @@ export default function DetailView({ capture, maps, onClose, onDelete, onUpdate 
             </div>
           )}
 
+          {capture.additionalContents && capture.additionalContents.length > 0 && (
+            <div className="mb-8">
+              <h3 className="text-[10px] font-bold text-muted-text tracking-widest uppercase mb-4">Additional Contents</h3>
+              <div className="flex flex-col gap-4">
+                {/* Images */}
+                {capture.additionalContents.some(c => c.startsWith('data:image/')) && (
+                  <div className="grid grid-cols-2 gap-2">
+                    {capture.additionalContents.filter(c => c.startsWith('data:image/')).map((img, i) => (
+                      <div 
+                        key={i} 
+                        className="rounded-xl overflow-hidden border border-[#222] relative group cursor-pointer active:scale-[0.99] transition-transform"
+                        onClick={() => setFullScreenImage(img)}
+                      >
+                        <img src={img} className="w-full h-auto object-cover aspect-square" />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                          <div className="bg-black/40 backdrop-blur-md p-2 rounded-full text-white">
+                            <Maximize2 size={16} />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {/* Videos */}
+                {capture.additionalContents.some(c => c.startsWith('data:video/')) && (
+                  <div className="flex flex-col gap-2">
+                    {capture.additionalContents.filter(c => c.startsWith('data:video/')).map((vid, i) => (
+                      <div key={i}><VideoPlayer src={vid} /></div>
+                    ))}
+                  </div>
+                )}
+                {/* Voices */}
+                {capture.additionalContents.some(c => c.startsWith('data:audio/')) && (
+                  <div className="flex flex-col gap-2">
+                    {capture.additionalContents.filter(c => c.startsWith('data:audio/')).map((audio, i) => (
+                      <div key={i} className="p-4 bg-black/40 border border-[#222] rounded-[20px] flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <button 
+                            onClick={() => {
+                              const a = new Audio(audio);
+                              a.play();
+                            }}
+                            className="w-10 h-10 flex items-center justify-center rounded-full bg-accent/20 text-accent transition-all active:scale-95"
+                          >
+                            <Play size={18} fill="currentColor" />
+                          </button>
+                          <div>
+                            <div className="text-[10px] font-bold text-white/50 uppercase tracking-widest">
+                              Additional Memo {i + 1}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className="bg-card-surface p-4 rounded-[20px] flex items-center justify-between">
             <div className="flex items-center gap-3">
                <div className="w-10 h-10 rounded-full bg-[#222] flex items-center justify-center text-accent">
@@ -168,26 +228,26 @@ export default function DetailView({ capture, maps, onClose, onDelete, onUpdate 
 
       {/* Full Screen Image Preview */}
       <AnimatePresence>
-        {isFullScreen && capture?.type === 'photo' && (
+        {fullScreenImage && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4"
-            onClick={() => setIsFullScreen(false)}
+            onClick={() => setFullScreenImage(null)}
           >
             <motion.img
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              src={capture.content}
+              src={fullScreenImage}
               className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
-              alt={capture.title}
+              alt={capture?.title || "Fullscreen Image"}
             />
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                setIsFullScreen(false);
+                setFullScreenImage(null);
               }}
               className="absolute top-6 right-6 w-12 h-12 bg-white/5 hover:bg-white/10 backdrop-blur-md rounded-full text-white/50 hover:text-white transition-all flex items-center justify-center border border-white/10"
             >

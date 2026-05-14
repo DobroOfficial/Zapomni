@@ -12,7 +12,7 @@ import { useBackHandler } from '../hooks/useBackHandler';
 interface CreateModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (type: CaptureType, title: string, content: string, description?: string, audioContent?: string, mapId?: string, reminderDate?: number) => void;
+  onSave: (type: CaptureType, title: string, content: string, description?: string, audioContent?: string, mapId?: string, reminderDate?: number, additionalContents?: string[]) => void;
   editCapture?: Capture | null;
   initialMapId?: string | null;
   onDelete?: (id: string) => void;
@@ -25,10 +25,12 @@ export default function CreateModal({ isOpen, onClose, onSave, editCapture, init
   const [content, setContent] = useState('');
   const [description, setDescription] = useState('');
   const [audioContent, setAudioContent] = useState('');
+  const [additionalContents, setAdditionalContents] = useState<string[]>([]);
   const [mapId, setMapId] = useState('unassigned');
   const [reminderDate, setReminderDate] = useState<string>('');
   const [maps, setMaps] = useState<MapData[]>([]);
   const [isCameraActive, setIsCameraActive] = useState(false);
+  const [cameraTarget, setCameraTarget] = useState<'main' | 'additional'>('main');
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
   const [isRecording, setIsRecording] = useState(false);
   const [isRecordingVideo, setIsRecordingVideo] = useState(false);
@@ -50,6 +52,7 @@ export default function CreateModal({ isOpen, onClose, onSave, editCapture, init
         setContent(editCapture.content);
         setDescription(editCapture.description || '');
         setAudioContent(editCapture.audioContent || '');
+        setAdditionalContents(editCapture.additionalContents || []);
         setMapId(editCapture.mapId || 'unassigned');
         setReminderDate(editCapture.reminderDate ? new Date(editCapture.reminderDate).toISOString().split('T')[0] : '');
       } else {
@@ -59,6 +62,7 @@ export default function CreateModal({ isOpen, onClose, onSave, editCapture, init
         setContent('');
         setDescription('');
         setAudioContent('');
+        setAdditionalContents([]);
         setMapId(initialMapId || 'unassigned');
         setReminderDate('');
       }
@@ -83,8 +87,46 @@ export default function CreateModal({ isOpen, onClose, onSave, editCapture, init
     }
   };
 
-  const startCamera = async () => {
+  const handleAddMoreFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []) as File[];
+    if (!files.length) return;
+
+    const newContents: string[] = [];
+    for (const file of files) {
+      if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) {
+        try {
+          const heic2any = (await import('heic2any')).default;
+          const convertedBlob = await heic2any({ blob: file, toType: "image/jpeg" });
+          const actualBlob = (Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob) as Blob;
+          
+          const reader = new FileReader();
+          await new Promise(resolve => {
+            reader.onloadend = () => {
+              newContents.push(reader.result as string);
+              resolve(null);
+            };
+            reader.readAsDataURL(actualBlob);
+          });
+        } catch (err) {
+          console.error('Error converting HEIC file:', err);
+        }
+      } else {
+        const reader = new FileReader();
+        await new Promise(resolve => {
+          reader.onloadend = () => {
+            newContents.push(reader.result as string);
+            resolve(null);
+          };
+          reader.readAsDataURL(file as Blob);
+        });
+      }
+    }
+    setAdditionalContents(prev => [...prev, ...newContents]);
+  };
+
+  const startCamera = async (target: 'main' | 'additional' = 'main') => {
     try {
+      setCameraTarget(target);
       setIsCameraActive(true);
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { facingMode: facingMode } 
@@ -136,8 +178,14 @@ export default function CreateModal({ isOpen, onClose, onSave, editCapture, init
       canvas.height = videoRef.current.videoHeight;
       const ctx = canvas.getContext('2d');
       ctx?.drawImage(videoRef.current, 0, 0);
-      setContent(canvas.toDataURL('image/jpeg'));
-      setType('photo');
+      const dataUrl = canvas.toDataURL('image/jpeg');
+      
+      if (cameraTarget === 'additional') {
+        setAdditionalContents(prev => [...prev, dataUrl]);
+      } else {
+        setContent(dataUrl);
+        setType('photo');
+      }
       stopCamera();
     }
   };
@@ -186,8 +234,13 @@ export default function CreateModal({ isOpen, onClose, onSave, editCapture, init
         const videoBlob = new Blob(videoChunksRef.current, { type: mimeType || 'video/webm' });
         const reader = new FileReader();
         reader.onloadend = () => {
-          setContent(reader.result as string);
-          setType('video');
+          const dataUrl = reader.result as string;
+          if (cameraTarget === 'additional') {
+            setAdditionalContents(prev => [...prev, dataUrl]);
+          } else {
+            setContent(dataUrl);
+            setType('video');
+          }
           stopCamera();
         };
         reader.readAsDataURL(videoBlob);
@@ -255,11 +308,12 @@ export default function CreateModal({ isOpen, onClose, onSave, editCapture, init
     }
 
     const finalReminderDate = reminderDate ? new Date(reminderDate).getTime() : undefined;
-    onSave(type, finalTitle, content, description, audioContent, mapId, finalReminderDate);
+    onSave(type, finalTitle, content, description, audioContent, mapId, finalReminderDate, additionalContents);
     setTitle('');
     setContent('');
     setDescription('');
     setAudioContent('');
+    setAdditionalContents([]);
     setMapId('unassigned');
     setReminderDate('');
     onClose();
@@ -310,7 +364,12 @@ export default function CreateModal({ isOpen, onClose, onSave, editCapture, init
         const audioBlob = new Blob(audioChunksRef.current, { type: mimeType || 'audio/webm' });
         const reader = new FileReader();
         reader.onloadend = () => {
-          setAudioContent(reader.result as string);
+          const result = reader.result as string;
+          setAudioContent(prev => {
+            if (!prev) return result;
+            setAdditionalContents(addPrev => [...addPrev, result]);
+            return prev;
+          });
         };
         reader.readAsDataURL(audioBlob);
         stream.getTracks().forEach(track => track.stop());
@@ -547,6 +606,43 @@ export default function CreateModal({ isOpen, onClose, onSave, editCapture, init
                       </div>
                     </>
                   )}
+                  {/* Notes photo attachment */}
+                  <div className="flex flex-col gap-3 mt-2">
+                    <div className="text-[8px] font-bold text-note-yellow uppercase tracking-widest opacity-60 flex justify-between items-center">
+                      <span>{t('Photo Attachments')}</span>
+                      <div className="flex items-center gap-3">
+                        <button onClick={() => startCamera('additional')} className="text-accent flex items-center gap-1 hover:underline">
+                          <Camera size={12} />
+                          <span>{t('Camera')}</span>
+                        </button>
+                        <label className="text-accent cursor-pointer flex items-center gap-1 hover:underline">
+                          <span>+ {t('Add photo')}</span>
+                          <input 
+                            type="file" 
+                            multiple
+                            accept="image/*,.heic,.heif" 
+                            className="hidden" 
+                            onChange={handleAddMoreFiles}
+                          />
+                        </label>
+                      </div>
+                    </div>
+                    {additionalContents.length > 0 && (
+                      <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+                        {additionalContents.map((file, i) => (
+                          <div key={i} className="relative shrink-0 w-20 h-20 bg-black rounded-[14px] overflow-hidden border border-[#222]">
+                            <img src={file} className="w-full h-full object-cover" />
+                            <button 
+                              onClick={() => setAdditionalContents(prev => prev.filter((_, index) => index !== i))}
+                              className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 border border-white/20 active:scale-95"
+                            >
+                              <X size={12} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -627,6 +723,48 @@ export default function CreateModal({ isOpen, onClose, onSave, editCapture, init
                         }}
                       />
                     </label>
+                  </div>
+
+                  {/* Additional photos/videos attachments */}
+                  <div className="flex flex-col gap-3 mt-2">
+                    <div className="text-[8px] font-bold text-photo-amber uppercase tracking-widest opacity-60 flex justify-between items-center">
+                      <span>{t('Additional Attachments')}</span>
+                      <div className="flex items-center gap-3">
+                        <button onClick={() => startCamera('additional')} className="text-accent flex items-center gap-1 hover:underline">
+                          <Camera size={12} />
+                          <span>{t('Camera')}</span>
+                        </button>
+                        <label className="text-accent cursor-pointer flex items-center gap-1 hover:underline">
+                          <span>+ {t('Add more')}</span>
+                          <input 
+                            type="file" 
+                            multiple
+                            accept="image/*,video/*,.heic,.heif" 
+                            className="hidden" 
+                            onChange={handleAddMoreFiles}
+                          />
+                        </label>
+                      </div>
+                    </div>
+                    {additionalContents.length > 0 && (
+                      <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+                        {additionalContents.map((file, i) => (
+                          <div key={i} className="relative shrink-0 w-20 h-20 bg-black rounded-[14px] overflow-hidden border border-[#222]">
+                            {file.startsWith('data:video/') ? (
+                              <video src={`${file}#t=0.001`} className="w-full h-full object-cover" />
+                            ) : (
+                              <img src={file} className="w-full h-full object-cover" />
+                            )}
+                            <button 
+                              onClick={() => setAdditionalContents(prev => prev.filter((_, index) => index !== i))}
+                              className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 border border-white/20 active:scale-95"
+                            >
+                              <X size={12} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Supplemental Data: Description and Voice Note */}
@@ -751,6 +889,35 @@ export default function CreateModal({ isOpen, onClose, onSave, editCapture, init
                       </button>
                     </div>
                   )}
+
+                  {additionalContents.filter(c => c.startsWith('data:audio/')).map((audio, index) => (
+                    <div key={index} className="flex items-center justify-between bg-black/20 border border-white/5 p-4 rounded-[18px]">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center text-accent">
+                          <Check size={16} />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest">{t('Additional Recording')} {index + 1}</span>
+                          <button 
+                            onClick={() => {
+                              const a = new Audio(audio);
+                              a.play();
+                            }}
+                            className="flex items-center gap-1 text-accent text-[9px] font-bold uppercase mt-1 hover:underline"
+                          >
+                            <Play size={10} fill="currentColor" />
+                            {t('Play audio')}
+                          </button>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => setAdditionalContents(prev => prev.filter(c => c !== audio))}
+                        className="text-red-500/50 hover:text-red-500 text-[10px] font-bold uppercase"
+                      >
+                        {t('Discard')}
+                      </button>
+                    </div>
+                  ))}
                 </div>
               )}
 

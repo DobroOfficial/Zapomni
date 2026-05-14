@@ -100,7 +100,7 @@ export default function App() {
     setAllCaptures(captures);
   };
 
-  const handleSaveCapture = async (type: CaptureType, title: string, content: string, description?: string, audioContent?: string, mapId: string = 'unassigned', reminderDate?: number) => {
+  const handleSaveCapture = async (type: CaptureType, title: string, content: string, description?: string, audioContent?: string, mapId: string = 'unassigned', reminderDate?: number, additionalContents?: string[]) => {
     const newCapture: Capture = {
       id: editingCapture?.id || uuidv4(),
       type,
@@ -108,6 +108,7 @@ export default function App() {
       content,
       description,
       audioContent,
+      additionalContents,
       mapId,
       timestamp: editingCapture?.timestamp || Date.now(),
       reminderDate

@@ -36,30 +36,71 @@ export default function AboutUsView({ onBack, theme }: AboutUsViewProps) {
             <Info size={32} />
           </div>
           <div>
-            <h1 className="text-xl font-bold">Zapomni · DobroOfficial</h1>
+            <h1 className="text-xl font-bold">DobroOfficial</h1>
             <h2 className="text-lg text-text-main mt-1">{t('About Us')}</h2>
           </div>
         </div>
 
-        <section className="space-y-3">
-          <p className="text-sm text-text-main leading-relaxed mb-4">
-            {language === 'Slovenian'
-              ? 'DobroOfficial predstavlja aplikacijo Zapomni. Smo ekipa entuziastov, ki želi ustvarjati preproste in uporabne rešitve za vsakodnevno življenje. Naša vizija je zagotoviti varno in zasebno okolje za shranjevanje vaših spominov in zapiskov.'
-              : 'DobroOfficial presents the Zapomni app. We are a team of enthusiasts dedicated to creating simple and useful solutions for everyday life. Our vision is to provide a safe and private environment for storing your memories and notes.'}
-          </p>
-          
-          <p className="text-sm text-text-main leading-relaxed mb-4">
-            {language === 'Slovenian'
-              ? 'Aplikacija Zapomni je bila zasnovana z mislijo na lokalno shranjevanje in popolno zasebnost. Prizadevamo si za transparentnost in odprtokodnost, zato je koda aplikacije dostopna na GitHubu.'
-              : 'The Zapomni app was designed with local storage and complete privacy in mind. We strive for transparency and open-source development, which is why the application code is available on GitHub.'}
-          </p>
+        <p className="text-sm leading-relaxed font-medium">
+          {language === 'Slovenian'
+            ? 'DobroOfficial je enoosebni hobi projekt. Dobro pomeni dobro v slovenščini - in to je cilj. Preproste, uporabne aplikacije za vsakdanje življenje, zgrajene v prostem času.'
+            : 'DobroOfficial is a one-person hobby project. Dobro means good in Slovenian - and that\'s the goal. Simple, useful apps for everyday life, built in free time.'}
+        </p>
 
-          <p className="text-sm text-text-main leading-relaxed mb-4">
+        <section className="space-y-3">
+          <h3 className="font-bold text-accent">1. {language === 'Slovenian' ? 'Kdo stoji za tem' : 'Who\'s Behind This'}</h3>
+          <p className="text-sm text-text-main leading-relaxed">
             {language === 'Slovenian'
-              ? 'Za vsa vprašanja, predloge ali pomoč smo dosegljivi preko elektronske pošte: DobroOfficial.si@gmail.com.'
-              : 'For any questions, suggestions, or help, you can reach us via email: DobroOfficial.si@gmail.com.'}
+              ? 'Samo jaz - ena oseba, ki gradi aplikacije v svojem prostem času. Nisem profesionalni razvijalec, si pa želim ustvarjati orodja, ki ljudem resnično pomagajo in jim polepšajo vsakdan. S pomočjo umetne inteligence lahko končno uresničim te ideje.'
+              : 'Just me - one person building apps in my spare time. I\'m not a professional developer, but I\'ve always wanted to build tools that genuinely help people and make their daily lives a little easier. With the help of AI, I can finally bring these ideas to life.'}
           </p>
         </section>
+
+        <section className="space-y-3">
+          <h3 className="font-bold text-accent">2. {language === 'Slovenian' ? 'Obljuba' : 'The Promise'}</h3>
+          <p className="text-sm text-text-main leading-relaxed">
+            {language === 'Slovenian'
+              ? 'Brezplačno. Brez povezave. Zasebno.'
+              : 'Free. Offline. Private.'}
+          </p>
+          <p className="text-sm text-text-main leading-relaxed">
+            {language === 'Slovenian'
+              ? 'Vsaka aplikacija je popolnoma brezplačna, deluje brez interneta in nikoli ne zbira vaših podatkov. Brez strežnikov, brez oglasov, brez sledenja. Vaši podatki ostanejo v vaši napravi - vedno.'
+              : 'Every app is completely free, works without internet, and never collects your data. No servers, no ads, no tracking. Your data stays on your device - always.'}
+          </p>
+        </section>
+
+        <section className="space-y-3">
+          <h3 className="font-bold text-accent">3. {language === 'Slovenian' ? 'Aplikacije' : 'Apps'}</h3>
+          <p className="text-sm text-text-main leading-relaxed">
+            <span className={`font-medium ${theme === 'light' ? 'text-black' : 'text-white'}`}>Zapomni</span><br/>
+            {language === 'Slovenian'
+              ? 'Brezplačna aplikacija za zapiske brez povezave. Zapiski, opomniki, glasovni beležki, fotografije in videoposnetki - vse shranjeno zasebno v vaši napravi.'
+              : 'A free offline notes app. Notes, reminders, voice memos, photos and videos - all stored privately on your device.'}
+          </p>
+          <p className="text-sm text-text-main leading-relaxed mt-2">
+            <span className={`font-medium ${theme === 'light' ? 'text-black' : 'text-white'}`}>Navada - {language === 'Slovenian' ? 'kmalu na voljo' : 'coming soon'}</span><br/>
+            {language === 'Slovenian'
+              ? 'V razvoju.'
+              : 'In development.'}
+          </p>
+        </section>
+
+        <section className="space-y-3">
+          <h3 className="font-bold text-accent">4. {language === 'Slovenian' ? 'Podpora' : 'Support'}</h3>
+          <p className="text-sm text-text-main leading-relaxed">
+            {language === 'Slovenian'
+              ? 'Vse aplikacije so brezplačne in bodo takšne tudi ostale. Če želite podpreti ta majhen hobi projekt, kava pomeni veliko'
+              : 'All apps are free and will stay that way. If you\'d like to support this little hobby project, a coffee means a lot'}
+          </p>
+        </section>
+
+        <div className="pt-8 pb-12 text-center border-t border-white/5 space-y-2">
+          <p className="text-xs font-bold">© 2026 DobroOfficial · Zapomni</p>
+          <p className="text-xs text-text-main">
+            {language === 'Slovenian' ? 'Vsi podatki so shranjeni lokalno v vaši napravi' : 'All data stored locally on your device'}
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -16,6 +16,7 @@ export interface Capture {
   content: string; // For notes, this is the text; for photos/voice, maybe base64 or path
   description?: string; // Optional description/caption for photos/voice
   audioContent?: string; // Optional voice note (base64) attached to a photo
+  additionalContents?: string[];
   mapId: string;
   timestamp: number;
   reminderDate?: number;
