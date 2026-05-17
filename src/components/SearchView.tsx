@@ -40,7 +40,7 @@ export default function SearchView({ onCaptureClick, onCaptureEdit }: SearchView
   });
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 pb-32">
       <div className="relative">
         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-text pointer-events-none">
           <Search size={18} />

@@ -34,6 +34,8 @@ export default function App() {
   const [globalActiveMapId, setGlobalActiveMapId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ title: string; body: string } | null>(null);
 
+  const [globalSelectedDate, setGlobalSelectedDate] = useState<string | null>(null);
+
   const handleTabChange = (tab: string) => {
     if (tab === activeTab) return;
     setPreviousTab(activeTab);
@@ -133,7 +135,7 @@ export default function App() {
     switch (activeTab) {
       case 'Home': return <HomeView onCaptureClick={setSelectedCapture} onCaptureEdit={setEditingCapture} refreshTrigger={refreshTrigger} />;
       case 'Maps': return <MapsView onCaptureClick={setSelectedCapture} onCaptureEdit={setEditingCapture} onMapViewChange={setGlobalActiveMapId} />;
-      case 'Calendar': return <CalendarView onCaptureClick={setSelectedCapture} onCaptureEdit={setEditingCapture} />;
+      case 'Calendar': return <CalendarView onCaptureClick={setSelectedCapture} onCaptureEdit={setEditingCapture} onDateChange={setGlobalSelectedDate} />;
       case 'Search': return <SearchView onCaptureClick={setSelectedCapture} onCaptureEdit={setEditingCapture} />;
       case 'Settings': return <SettingsView theme={theme} setTheme={setTheme} />;
       default: return <HomeView onCaptureClick={setSelectedCapture} onCaptureEdit={setEditingCapture} refreshTrigger={refreshTrigger} />;
@@ -143,7 +145,7 @@ export default function App() {
   return (
     <div className={`${theme} h-screen flex flex-col bg-page-bg text-text-main font-sans overflow-hidden`}>
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto custom-scrollbar p-4 pb-28">
+      <main className="flex-1 overflow-y-auto custom-scrollbar px-4 pt-2 after:block after:h-40 after:content-['']">
           <header className="flex items-center justify-between mb-8 mt-2 px-2">
           <div className="flex items-center gap-2">
             <h1 className="font-sans font-extrabold text-[28px] tracking-tight">{t('ZAPOMNI')}</h1>
@@ -161,10 +163,14 @@ export default function App() {
       </main>
   
         {/* FAB */}
-        {activeTab !== 'Settings' && (
+        {activeTab !== 'Settings' && activeTab !== 'Search' && (
           <button 
             onClick={() => {
-              setIsCreateOpen(true);
+              if (activeTab === 'Maps' && !globalActiveMapId) {
+                window.dispatchEvent(new CustomEvent('open-add-map'));
+              } else {
+                setIsCreateOpen(true);
+              }
             }}
             className="fixed bottom-[88px] right-6 w-14 h-14 bg-accent text-black rounded-full flex items-center justify-center z-50 shadow-[0_10px_30px_rgba(0,0,0,0.5),0_0_20px_rgba(255,208,0,0.3)] active:scale-90 transition-transform"
           >
@@ -222,6 +228,7 @@ export default function App() {
               onClose={() => setSelectedCapture(null)} 
               onDelete={handleDelete}
               onUpdate={handleUpdate}
+              onEdit={setEditingCapture}
             />
           )}
         </AnimatePresence>
@@ -230,6 +237,7 @@ export default function App() {
           isOpen={isCreateOpen || !!editingCapture} 
           editCapture={editingCapture}
           initialMapId={globalActiveMapId}
+          initialDate={activeTab === 'Calendar' ? globalSelectedDate : null}
           onClose={() => {
             setIsCreateOpen(false);
             setEditingCapture(null);

@@ -127,6 +127,16 @@ export default function MapsView({ onCaptureClick, onCaptureEdit, onMapViewChang
   }, []);
 
   useEffect(() => {
+    const handleOpenAddMap = () => {
+      if (!selectedMap && !isAdding) {
+        startAddMap();
+      }
+    };
+    window.addEventListener('open-add-map', handleOpenAddMap);
+    return () => window.removeEventListener('open-add-map', handleOpenAddMap);
+  }, [selectedMap, isAdding]);
+
+  useEffect(() => {
     if (selectedMap) {
       loadMapCaptures(selectedMap.id);
       onMapViewChange?.(selectedMap.id);
@@ -260,88 +270,6 @@ export default function MapsView({ onCaptureClick, onCaptureEdit, onMapViewChang
                 <Plus size={20} strokeWidth={3} />
               </button>
             </div>
-
-            {isAdding && (
-              <div className="bg-card-surface border border-[#222] rounded-[24px] p-6 flex flex-col gap-5 animate-in zoom-in-95 duration-200 shadow-2xl">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-sm font-bold text-accent uppercase tracking-wider">{editingMapId ? 'Edit Category' : 'New Category'}</h3>
-                  <button onClick={() => { setIsAdding(false); setEditingMapId(null); }} className="text-muted-text hover:text-white transition-colors">
-                    <X size={20} />
-                  </button>
-                </div>
-                
-                <div className="flex flex-col gap-2">
-                  <span className="text-[10px] font-bold text-muted-text uppercase tracking-widest px-1">Name</span>
-                  <input 
-                    autoFocus
-                    type="text" 
-                    placeholder="e.g. Personal, Work, Grocery"
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    className="bg-black/40 border border-[#222] rounded-[14px] p-4 text-white focus:outline-none focus:border-accent text-sm font-bold placeholder:text-muted-text/20"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-3">
-                  <div className="flex justify-between items-center px-1">
-                    <span className="text-[10px] font-bold text-muted-text uppercase tracking-widest">Icon</span>
-                  </div>
-                  <div className="grid grid-cols-8 gap-2">
-                    {Object.keys(MAP_ICONS).map(iconId => {
-                      const IconDef = MAP_ICONS[iconId];
-                      const isSelected = selectedIconId === iconId;
-                      return (
-                        <button
-                          key={iconId}
-                          onClick={() => setSelectedIconId(iconId)}
-                          className={`aspect-square flex items-center justify-center rounded-[10px] border transition-all ${isSelected ? 'border-accent bg-accent/20 text-accent' : 'border-[#222] bg-black/40 text-muted-text hover:border-white/20'}`}
-                        >
-                          <IconDef size={16} />
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-3">
-                  <div className="flex justify-between items-center px-1">
-                    <span className="text-[10px] font-bold text-muted-text uppercase tracking-widest">Theme Color</span>
-                    <div className="w-4 h-4 rounded-full shadow-[0_0_8px_currentColor]" style={{ backgroundColor: selectedColor, color: selectedColor }} />
-                  </div>
-                  <div className="grid grid-cols-8 gap-2">
-                    {PRESET_COLORS.map(color => (
-                       <button
-                         key={color}
-                         onClick={() => setSelectedColor(color)}
-                         className={`aspect-square rounded-full transition-all ${selectedColor === color ? 'scale-110 border-2 border-white ring-2 ring-accent shadow-lg' : 'opacity-40 hover:opacity-100 hover:scale-105'}`}
-                         style={{ backgroundColor: color }}
-                       />
-                    ))}
-                    <div className="relative aspect-square">
-                      <input 
-                        type="color"
-                        value={selectedColor}
-                        onChange={(e) => setSelectedColor(e.target.value)}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      />
-                      <div 
-                        className={`w-full h-full rounded-full border-2 border-dashed flex items-center justify-center text-[10px] ${!PRESET_COLORS.includes(selectedColor) ? 'border-accent text-accent ring-2 ring-accent/20 scale-110' : 'border-muted-text/30 text-muted-text/40'}`}
-                        style={{ backgroundColor: !PRESET_COLORS.includes(selectedColor) ? selectedColor : 'transparent' }}
-                      >
-                         {!PRESET_COLORS.includes(selectedColor) ? '' : '+'}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <button 
-                  onClick={handleSaveMap}
-                  className="w-full bg-accent text-black font-extrabold py-4 rounded-[16px] text-xs uppercase tracking-widest active:scale-95 transition-transform mt-2 shadow-lg shadow-accent/10"
-                >
-                  {editingMapId ? 'Save Category' : 'Create Category'}
-                </button>
-              </div>
-            )}
 
             {maps.length === 0 ? (
               <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-[#141414] border border-[#222] border-dashed rounded-[32px]">
@@ -587,6 +515,104 @@ export default function MapsView({ onCaptureClick, onCaptureEdit, onMapViewChang
                   </div>
                 </>
               )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isAdding && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[110] bg-black/80 flex items-end sm:items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              className="w-full max-w-md bg-nav-bg border border-[#222] rounded-t-[24px] sm:rounded-[24px] overflow-hidden flex flex-col max-h-[90vh]"
+            >
+              <div className="p-6 flex flex-col gap-6 overflow-y-auto custom-scrollbar">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-sm font-bold text-accent uppercase tracking-wider">{editingMapId ? 'Edit Category' : 'New Category'}</h3>
+                  <button onClick={() => { setIsAdding(false); setEditingMapId(null); }} className="text-muted-text hover:text-white transition-colors">
+                    <X size={20} />
+                  </button>
+                </div>
+                
+                <div className="flex flex-col gap-2">
+                  <span className="text-[10px] font-bold text-muted-text uppercase tracking-widest px-1">Name</span>
+                  <input 
+                    autoFocus
+                    type="text" 
+                    placeholder="e.g. Personal, Work, Grocery"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    className="bg-black/40 border border-[#222] rounded-[14px] p-4 text-white focus:outline-none focus:border-accent text-sm font-bold placeholder:text-muted-text/20"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <div className="flex justify-between items-center px-1">
+                    <span className="text-[10px] font-bold text-muted-text uppercase tracking-widest">Icon</span>
+                  </div>
+                  <div className="grid grid-cols-8 gap-2">
+                    {Object.keys(MAP_ICONS).map(iconId => {
+                      const IconDef = MAP_ICONS[iconId];
+                      const isSelected = selectedIconId === iconId;
+                      return (
+                        <button
+                          key={iconId}
+                          onClick={() => setSelectedIconId(iconId)}
+                          className={`aspect-square flex items-center justify-center rounded-[10px] border transition-all ${isSelected ? 'border-accent bg-accent/20 text-accent' : 'border-[#222] bg-black/40 text-muted-text hover:border-white/20'}`}
+                        >
+                          <IconDef size={16} />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <div className="flex justify-between items-center px-1">
+                    <span className="text-[10px] font-bold text-muted-text uppercase tracking-widest">Theme Color</span>
+                    <div className="w-4 h-4 rounded-full shadow-[0_0_8px_currentColor]" style={{ backgroundColor: selectedColor, color: selectedColor }} />
+                  </div>
+                  <div className="grid grid-cols-8 gap-2">
+                    {PRESET_COLORS.map(color => (
+                       <button
+                         key={color}
+                         onClick={() => setSelectedColor(color)}
+                         className={`aspect-square rounded-full transition-all ${selectedColor === color ? 'scale-110 border-2 border-white ring-2 ring-accent shadow-lg' : 'opacity-40 hover:opacity-100 hover:scale-105'}`}
+                         style={{ backgroundColor: color }}
+                       />
+                    ))}
+                    <div className="relative aspect-square">
+                      <input 
+                        type="color"
+                        value={selectedColor}
+                        onChange={(e) => setSelectedColor(e.target.value)}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      />
+                      <div 
+                        className={`w-full h-full rounded-full border-2 border-dashed flex items-center justify-center text-[10px] ${!PRESET_COLORS.includes(selectedColor) ? 'border-accent text-accent ring-2 ring-accent/20 scale-110' : 'border-muted-text/30 text-muted-text/40'}`}
+                        style={{ backgroundColor: !PRESET_COLORS.includes(selectedColor) ? selectedColor : 'transparent' }}
+                      >
+                         {!PRESET_COLORS.includes(selectedColor) ? '' : '+'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={handleSaveMap}
+                  className="w-full bg-accent text-black font-extrabold py-4 rounded-[16px] text-xs uppercase tracking-widest active:scale-95 transition-transform mt-2 shadow-lg shadow-accent/10"
+                >
+                  {editingMapId ? 'Save Category' : 'Create Category'}
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}

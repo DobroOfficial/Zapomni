@@ -151,7 +151,7 @@ export default function SettingsView({ theme, setTheme }: { theme: string; setTh
   }
 
   return (
-    <div className="p-6 flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="p-6 flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-32">
       <div>
         <h2 className={`text-xl font-bold uppercase tracking-tight ${theme === 'light' ? 'text-text-main' : 'text-white'}`}>{t('Settings')}</h2>
         <p className="text-xs text-muted-text uppercase tracking-widest font-bold mt-1">{t('Manage your interface')}</p>
@@ -318,7 +318,7 @@ export default function SettingsView({ theme, setTheme }: { theme: string; setTh
 
       {/* Footer Info */}
       <div className="flex flex-col items-center gap-1 mt-auto pt-2 text-muted-text">
-        <span className="text-[10px] font-bold uppercase tracking-widest">{t('Version 1.0.3')}</span>
+        <span className="text-[10px] font-bold uppercase tracking-widest">{t('Version 1.0.5')}</span>
         <a 
           href="https://github.com/DobroOfficial/Zapomni" 
           target="_blank" 

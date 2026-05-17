@@ -94,39 +94,7 @@ export default function HomeView({ onCaptureClick, onCaptureEdit, refreshTrigger
         </button>
       </div>
       
-      {/* Filters */}
-      <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 custom-scrollbar">
-        <button 
-          onClick={() => handleFilter('all')}
-          className={`flex-shrink-0 px-5 py-1.5 rounded-[99px] text-[10px] font-bold uppercase transition-colors ${filter === 'all' ? 'bg-accent text-black' : 'bg-[#141414] text-muted-text'}`}
-        >
-          {t('All')}
-        </button>
-        <button 
-          onClick={() => handleFilter('note')}
-          className={`flex-shrink-0 px-5 py-1.5 rounded-[99px] text-[10px] font-bold uppercase transition-colors ${filter === 'note' ? 'bg-note-pill text-note-yellow' : 'bg-[#141414] text-muted-text'}`}
-        >
-          {t('Notes')}
-        </button>
-        <button 
-          onClick={() => handleFilter('photo')}
-          className={`flex-shrink-0 px-5 py-1.5 rounded-[99px] text-[10px] font-bold uppercase transition-colors ${filter === 'photo' ? 'bg-photo-pill text-photo-amber' : 'bg-[#141414] text-muted-text'}`}
-        >
-          {t('Photos')}
-        </button>
-        <button 
-          onClick={() => handleFilter('voice')}
-          className={`flex-shrink-0 px-5 py-1.5 rounded-[99px] text-[10px] font-bold uppercase transition-colors ${filter === 'voice' ? 'bg-voice-pill text-voice-orange' : 'bg-[#141414] text-muted-text'}`}
-        >
-          {t('Voices')}
-        </button>
-        <button 
-          onClick={() => handleFilter('video')}
-          className={`flex-shrink-0 px-5 py-1.5 rounded-[99px] text-[10px] font-bold uppercase transition-colors ${filter === 'video' ? 'bg-accent/20 text-accent' : 'bg-[#141414] text-muted-text'}`}
-        >
-          {t('Videos')}
-        </button>
-      </div>
+
 
       <div className="flex flex-col gap-4">
         {filteredCaptures.map((capture) => {

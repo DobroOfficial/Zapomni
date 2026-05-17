@@ -12,9 +12,10 @@ import { useLanguage } from '../contexts/LanguageContext';
 interface CalendarViewProps {
   onCaptureClick: (capture: Capture) => void;
   onCaptureEdit: (capture: Capture) => void;
+  onDateChange?: (dateStr: string) => void;
 }
 
-export default function CalendarView({ onCaptureClick, onCaptureEdit }: CalendarViewProps) {
+export default function CalendarView({ onCaptureClick, onCaptureEdit, onDateChange }: CalendarViewProps) {
   const { t } = useLanguage();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -25,6 +26,10 @@ export default function CalendarView({ onCaptureClick, onCaptureEdit }: Calendar
 
   useEffect(() => {
     loadData();
+    const year = selectedDate.getFullYear();
+    const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+    const dayStr = String(selectedDate.getDate()).padStart(2, '0');
+    onDateChange?.(`${year}-${month}-${dayStr}`);
   }, []);
 
   useEffect(() => {
@@ -162,7 +167,14 @@ export default function CalendarView({ onCaptureClick, onCaptureEdit }: Calendar
           {days.map(day => (
             <button 
               key={day}
-              onClick={() => setSelectedDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), day))}
+              onClick={() => {
+                const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                setSelectedDate(newDate);
+                const year = newDate.getFullYear();
+                const month = String(newDate.getMonth() + 1).padStart(2, '0');
+                const dayStr = String(newDate.getDate()).padStart(2, '0');
+                onDateChange?.(`${year}-${month}-${dayStr}`);
+              }}
               className={`h-12 relative flex items-center justify-center text-xs font-bold transition-all active:scale-90
                 ${isSelected(day) ? 'text-black z-10' : (isToday(day) ? 'text-accent' : 'text-white')}
               `}
