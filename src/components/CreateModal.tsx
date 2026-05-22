@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, PenTool, Camera, Mic, Check, Image as ImageIcon, RefreshCcw, Map as MapIcon, Play, Video, Calendar, Trash2, Plus, Sliders, ArrowRight, ChevronUp, ChevronDown } from 'lucide-react';
+import { X, PenTool, Camera, Mic, Check, Image as ImageIcon, RefreshCcw, Map as MapIcon, Play, Video, Calendar, Trash2, Plus, Sliders, ArrowRight, ChevronUp, ChevronDown, Heading1, Heading2, Bold, Italic, Underline, ListTodo, List, Type } from 'lucide-react';
 import { Capture, CaptureType, MapData } from '../types';
 import { getAllMaps } from '../services/db';
 import VideoPlayer from './VideoPlayer';
@@ -83,10 +83,75 @@ export default function CreateModal({ isOpen, onClose, onSave, editCapture, init
   useBackHandler(selectedMediaFullscreenIndex !== null, () => setSelectedMediaFullscreenIndex(null), 'create-modal-fullscreen');
   
   const videoRef = useRef<HTMLVideoElement>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const videoRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const videoChunksRef = useRef<Blob[]>([]);
+
+  const [activeFormats, setActiveFormats] = useState<string[]>([]);
+
+  const handleFormat = (cmd: string, val?: string) => {
+    document.execCommand(cmd, false, val);
+    if (editorRef.current) {
+      setContent(editorRef.current.innerHTML);
+    }
+    updateActiveFormats();
+  };
+
+  const handleFormatBlock = (tag: string) => {
+    const currentBlock = document.queryCommandValue('formatBlock');
+    if (currentBlock && currentBlock.toLowerCase() === tag.toLowerCase()) {
+      document.execCommand('formatBlock', false, 'div');
+    } else {
+      document.execCommand('formatBlock', false, tag);
+    }
+    if (editorRef.current) {
+      setContent(editorRef.current.innerHTML);
+    }
+    updateActiveFormats();
+  };
+
+  const handleChecklist = () => {
+    document.execCommand('insertHTML', false, '<span class="checklist-box cursor-pointer select-none text-accent">☐</span>&nbsp;');
+    if (editorRef.current) setContent(editorRef.current.innerHTML);
+  };
+
+  const handleTextSize = () => {
+    let size = document.queryCommandValue('fontSize');
+    let nextSize = '3'; // normal
+    if (size === '3' || !size || size === '4') nextSize = '5'; // to large
+    else if (size === '5' || size === '6' || size === '7') nextSize = '2'; // to small
+    else nextSize = '3'; // default back to normal
+    document.execCommand('fontSize', false, nextSize);
+    if (editorRef.current) setContent(editorRef.current.innerHTML);
+    updateActiveFormats();
+  };
+
+  const updateActiveFormats = () => {
+    const formats = [];
+    if (document.queryCommandState('bold')) formats.push('bold');
+    if (document.queryCommandState('italic')) formats.push('italic');
+    if (document.queryCommandState('underline')) formats.push('underline');
+    const block = document.queryCommandValue('formatBlock');
+    if (block === 'h1' || block === 'H1') formats.push('h1');
+    if (block === 'h2' || block === 'H2') formats.push('h2');
+    if (document.queryCommandState('insertUnorderedList')) formats.push('list');
+    setActiveFormats(formats);
+  };
+
+  const handleEditorClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    updateActiveFormats();
+    const target = e.target as HTMLElement;
+    if (target.classList.contains('checklist-box')) {
+      if (target.innerText === '☐') {
+        target.innerText = '☑';
+      } else {
+        target.innerText = '☐';
+      }
+      if (editorRef.current) setContent(editorRef.current.innerHTML);
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -119,6 +184,16 @@ export default function CreateModal({ isOpen, onClose, onSave, editCapture, init
       stopCamera();
     }
   }, [isOpen, editCapture, initialMapId, initialDate]);
+
+  useEffect(() => {
+    if (editorRef.current && isOpen && step === 'compose' && type === 'note') {
+      if (editorRef.current.innerHTML === '' && content !== '') {
+        editorRef.current.innerHTML = content;
+      } else if (content === '' && editorRef.current.innerHTML !== '') {
+        editorRef.current.innerHTML = '';
+      }
+    }
+  }, [isOpen, step, type, content]);
 
   const loadMaps = async () => {
     const allMaps = await getAllMaps();
@@ -309,31 +384,19 @@ export default function CreateModal({ isOpen, onClose, onSave, editCapture, init
       const stream = videoRef.current?.srcObject as MediaStream;
       if (!stream) return;
 
-      const mimeType = MediaRecorder.isTypeSupported('video/mp4;codecs=avc1')
-        ? 'video/mp4;codecs=avc1'
-        : MediaRecorder.isTypeSupported('video/mp4')
-          ? 'video/mp4'
-          : MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
-            ? 'video/webm;codecs=vp9,opus'
-            : MediaRecorder.isTypeSupported('video/webm')
-              ? 'video/webm'
-              : '';
-
-      const recorder = mimeType
-        ? new MediaRecorder(stream, { mimeType })
-        : new MediaRecorder(stream);
+      const recorder = new MediaRecorder(stream);
 
       videoRecorderRef.current = recorder;
       videoChunksRef.current = [];
 
       recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
+        if (e.data && e.data.size > 0) {
           videoChunksRef.current.push(e.data);
         }
       };
 
       recorder.onstop = () => {
-        const videoBlob = new Blob(videoChunksRef.current, { type: mimeType || 'video/webm' });
+        const videoBlob = new Blob(videoChunksRef.current, { type: recorder.mimeType || 'video/mp4' });
         const reader = new FileReader();
         reader.onloadend = () => {
           const dataUrl = reader.result as string;
@@ -344,7 +407,7 @@ export default function CreateModal({ isOpen, onClose, onSave, editCapture, init
         reader.readAsDataURL(videoBlob);
       };
 
-      recorder.start();
+      recorder.start(200);
       setIsRecordingVideo(true);
     } catch (err) {
       console.error("Video recording failed", err);
@@ -437,29 +500,19 @@ export default function CreateModal({ isOpen, onClose, onSave, editCapture, init
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm') 
-        ? 'audio/webm' 
-        : MediaRecorder.isTypeSupported('audio/mp4') 
-          ? 'audio/mp4' 
-          : MediaRecorder.isTypeSupported('audio/mpeg') 
-          ? 'audio/mpeg' 
-          : '';
-
-      const recorder = mimeType 
-        ? new MediaRecorder(stream, { mimeType })
-        : new MediaRecorder(stream);
+      const recorder = new MediaRecorder(stream);
 
       mediaRecorderRef.current = recorder;
       audioChunksRef.current = [];
 
       recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
+        if (e.data && e.data.size > 0) {
           audioChunksRef.current.push(e.data);
         }
       };
 
       recorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType || 'audio/webm' });
+        const audioBlob = new Blob(audioChunksRef.current, { type: recorder.mimeType || 'audio/mp4' });
         const reader = new FileReader();
         reader.onloadend = () => {
           const result = reader.result as string;
@@ -473,7 +526,7 @@ export default function CreateModal({ isOpen, onClose, onSave, editCapture, init
         stream.getTracks().forEach(track => track.stop());
       };
 
-      recorder.start();
+      recorder.start(200);
       setIsRecording(true);
     } catch (err) {
       console.error("Audio recording failed", err);
@@ -491,6 +544,14 @@ export default function CreateModal({ isOpen, onClose, onSave, editCapture, init
 
   return (
     <>
+      <style>{`
+        .editor-content h1 { font-size: 2rem; font-weight: 800; margin-top: 0.5em; margin-bottom: 0.25em; line-height: 1.2; }
+        .editor-content h2 { font-size: 1.5rem; font-weight: 700; margin-top: 0.5em; margin-bottom: 0.25em; line-height: 1.3; }
+        .editor-content ul { list-style-type: disc; padding-left: 1.5em; margin-top: 0.5em; margin-bottom: 0.5em; }
+        .editor-content li { margin-bottom: 0.25em; }
+        .editor-content:empty:before { content: attr(data-placeholder); color: rgba(255, 255, 255, 0.3); pointer-events: none; }
+        .checklist-box { font-family: monospace; font-size: 1.2em; display: inline-block; width: 1.2em; text-align: center; }
+      `}</style>
       <AnimatePresence>
         {isCameraActive && (
           <motion.div
@@ -801,8 +862,8 @@ export default function CreateModal({ isOpen, onClose, onSave, editCapture, init
                   : 'max-w-md border rounded-[24px] max-h-[90vh] shadow-2xl'
               }`}
             >
-          <div className="p-6 flex flex-col gap-6 overflow-y-auto custom-scrollbar flex-1">
-            <div className="flex justify-between items-center shrink-0">
+          <div className={type === 'note' && step === 'compose' ? "flex flex-col h-full w-full" : "p-6 flex flex-col gap-6 overflow-y-auto custom-scrollbar flex-1"}>
+            <div className={`flex justify-between items-center shrink-0 ${type === 'note' && step === 'compose' ? 'px-6 pt-4 pb-0 mb-6' : ''}`}>
               <div className="flex items-center gap-3">
                 <h2 className="text-lg font-bold text-accent uppercase font-sans">
                   {editCapture ? t('Edit Reminder') : t('New Reminder')}
@@ -853,26 +914,61 @@ export default function CreateModal({ isOpen, onClose, onSave, editCapture, init
             ) : (
               <>
 
-            <div className={`flex flex-col gap-3 ${type === 'note' ? 'flex-1' : ''}`}>
-              <input
-                type="text"
-                placeholder={type === 'note' ? t('Title') : t('Entry Title')}
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className={`w-full text-white focus:outline-none ${
-                    type === 'note' 
-                    ? 'bg-transparent border-none p-0 text-3xl font-extrabold tracking-tight placeholder-muted-text/30' 
-                    : 'bg-[#141414] border border-[#222] rounded-[14px] p-4 text-sm font-semibold focus:border-accent'
-                }`}
-              />
+            <div className={`flex flex-col ${type === 'note' && step === 'compose' ? 'flex-1 h-full' : 'gap-3 flex-1'}`}>
+              <div className={type === 'note' && step === 'compose' ? "shrink-0 px-6 bg-nav-bg" : ""}>
+                <input
+                  type="text"
+                  placeholder={type === 'note' ? t('Title') : t('Entry Title')}
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className={`w-full text-white focus:outline-none ${
+                      type === 'note' 
+                      ? 'bg-transparent border-none p-0 text-3xl font-extrabold tracking-tight placeholder-muted-text/30' 
+                      : 'bg-[#141414] border border-[#222] rounded-[14px] p-4 text-sm font-semibold focus:border-accent'
+                  }`}
+                />
+              
+              {type === 'note' && step === 'compose' && (
+                <div className="flex items-center gap-0.5 overflow-x-auto custom-scrollbar-h py-1 -mx-2 px-2 mt-1">
+                  <button onClick={(e) => { e.preventDefault(); handleFormatBlock('H1'); }} className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${activeFormats.includes('h1') ? 'bg-[#FFD000]/20 text-[#FFD000]' : 'text-[#888] hover:bg-[#222] hover:text-white'}`}>
+                    <Heading1 size={15} />
+                  </button>
+                  <button onClick={(e) => { e.preventDefault(); handleFormatBlock('H2'); }} className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${activeFormats.includes('h2') ? 'bg-[#FFD000]/20 text-[#FFD000]' : 'text-[#888] hover:bg-[#222] hover:text-white'}`}>
+                    <Heading2 size={15} />
+                  </button>
+                  <div className="w-px h-4 bg-[#2a2a2a] mx-1.5 shrink-0" />
+                  <button onClick={(e) => { e.preventDefault(); handleFormat('bold'); }} className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${activeFormats.includes('bold') ? 'bg-[#FFD000]/20 text-[#FFD000]' : 'text-[#888] hover:bg-[#222] hover:text-white'}`}>
+                    <Bold size={15} />
+                  </button>
+                  <button onClick={(e) => { e.preventDefault(); handleFormat('italic'); }} className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${activeFormats.includes('italic') ? 'bg-[#FFD000]/20 text-[#FFD000]' : 'text-[#888] hover:bg-[#222] hover:text-white'}`}>
+                    <Italic size={15} />
+                  </button>
+                  <button onClick={(e) => { e.preventDefault(); handleFormat('underline'); }} className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${activeFormats.includes('underline') ? 'bg-[#FFD000]/20 text-[#FFD000]' : 'text-[#888] hover:bg-[#222] hover:text-white'}`}>
+                    <Underline size={15} />
+                  </button>
+                  <div className="w-px h-4 bg-[#2a2a2a] mx-1.5 shrink-0" />
+                  <button onClick={(e) => { e.preventDefault(); handleChecklist(); }} className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors text-[#888] hover:bg-[#222] hover:text-white`}>
+                    <ListTodo size={15} />
+                  </button>
+                  <button onClick={(e) => { e.preventDefault(); handleFormat('insertUnorderedList'); }} className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${activeFormats.includes('list') ? 'bg-[#FFD000]/20 text-[#FFD000]' : 'text-[#888] hover:bg-[#222] hover:text-white'}`}>
+                    <List size={15} />
+                  </button>
+                </div>
+              )}
+              </div>
               
               {type === 'note' && (
-                <div className="flex flex-col gap-3 flex-1 relative h-full">
-                  <textarea
-                    placeholder={t('Start typing...')}
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    className="w-full bg-transparent border-none p-0 text-white min-h-[140px] flex-1 focus:outline-none resize-none text-lg leading-relaxed font-medium placeholder-muted-text/30"
+                <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col relative h-full custom-scrollbar">
+                  <div
+                    ref={editorRef}
+                    contentEditable
+                    onInput={(e) => setContent(e.currentTarget.innerHTML)}
+                    onClick={handleEditorClick}
+                    onKeyUp={updateActiveFormats}
+                    onMouseUp={updateActiveFormats}
+                    className="w-full bg-transparent border-none p-0 text-white min-h-[140px] flex-1 focus:outline-none text-lg leading-relaxed font-medium editor-content"
+                    style={{ minHeight: '140px' }}
+                    data-placeholder={t('Start typing...')}
                   />
                   
                   <div className="flex flex-col gap-3 mt-auto relative z-10 pb-2">
@@ -1400,6 +1496,7 @@ export default function CreateModal({ isOpen, onClose, onSave, editCapture, init
 
             </div>
 
+            <div className={type === 'note' && step === 'compose' ? 'shrink-0 px-6 pb-6 pt-2 bg-nav-bg mt-auto' : ''}>
             <button
                onClick={handleSave}
                disabled={(type === 'voice' && !audioContent && !isRecording) || (type === 'video' && !content && !isRecordingVideo)}
@@ -1412,6 +1509,7 @@ export default function CreateModal({ isOpen, onClose, onSave, editCapture, init
               <span>{(isRecording || isRecordingVideo) ? t('RECORDING IN PROGRESS...') : (editCapture ? t('UPDATE REMINDER') : t('SAVE REMINDER'))}</span>
               <ArrowRight size={20} strokeWidth={3} />
             </button>
+            </div>
               </>
             )}
           </div>

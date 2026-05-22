@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Mic, Play } from 'lucide-react';
+import { Mic, Play, Calendar } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useLongPress } from '../hooks/useLongPress';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -13,9 +13,10 @@ export interface VoiceCardProps {
   audioContent?: string;
   onClick?: () => void;
   onEdit?: () => void;
+  reminderDate?: number;
 }
 
-export default function VoiceCard({ title, duration, timestamp, mapName, audioContent, onClick, onEdit }: VoiceCardProps) {
+export default function VoiceCard({ title, duration, timestamp, mapName, audioContent, onClick, onEdit, reminderDate }: VoiceCardProps) {
   const { t } = useLanguage();
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -100,8 +101,16 @@ export default function VoiceCard({ title, duration, timestamp, mapName, audioCo
             </button>
             <span className="text-text-main text-xs font-medium">{isPlaying ? t('Playing...') : duration}</span>
         </div>
-        <div className="bg-voice-pill inline-block px-2.5 py-1 rounded-[99px] text-voice-orange text-[10px] font-semibold">
-          {mapName}
+        <div className="flex flex-col items-end gap-1.5 shrink-0">
+          <div className="bg-voice-pill inline-block px-2.5 py-1 rounded-[99px] text-voice-orange text-[10px] font-semibold">
+            {mapName}
+          </div>
+          {reminderDate && (
+            <div className="flex items-center gap-1.5 bg-accent/10 px-2 py-0.5 rounded-full text-accent text-[10px] font-semibold">
+              <Calendar size={11} className="text-[#FFD000]" />
+              <span>{new Date(reminderDate).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

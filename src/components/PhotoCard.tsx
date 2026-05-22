@@ -1,5 +1,5 @@
 import React from 'react';
-import { Camera, Mic } from 'lucide-react';
+import { Camera, Mic, Calendar } from 'lucide-react';
 import { useLongPress } from '../hooks/useLongPress';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -13,9 +13,10 @@ export interface PhotoCardProps {
   hasVoice?: boolean;
   onClick?: () => void;
   onEdit?: () => void;
+  reminderDate?: number;
 }
 
-export default function PhotoCard({ imageSrc, title, caption, timestamp, mapName, hasVoice, onClick, onEdit }: PhotoCardProps) {
+export default function PhotoCard({ imageSrc, title, caption, timestamp, mapName, hasVoice, onClick, onEdit, reminderDate }: PhotoCardProps) {
   const { t } = useLanguage();
   const longPressProps = useLongPress({
     onLongPress: () => onEdit?.(),
@@ -47,8 +48,16 @@ export default function PhotoCard({ imageSrc, title, caption, timestamp, mapName
           <h3 className="font-sans font-bold text-sm text-text-main">{title}</h3>
           <p className="text-preview-text text-[11px]">{caption}</p>
         </div>
-        <div className="bg-photo-pill inline-block w-fit px-2.5 py-1 rounded-[99px] text-photo-amber text-[10px] font-semibold">
-          {mapName}
+        <div className="flex justify-between items-center mt-1">
+          <div className="bg-photo-pill inline-block w-fit px-2.5 py-1 rounded-[99px] text-photo-amber text-[10px] font-semibold">
+            {mapName}
+          </div>
+          {reminderDate && (
+            <div className="flex items-center gap-1.5 bg-accent/10 px-2 py-0.5 rounded-full text-accent text-[10px] font-semibold">
+              <Calendar size={11} className="text-[#FFD000]" />
+              <span>{new Date(reminderDate).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

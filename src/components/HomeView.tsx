@@ -6,6 +6,7 @@ import VideoCard from './VideoCard';
 import { Capture, CaptureType, MapData } from '../types';
 import { getAllCaptures, getAllMaps } from '../services/db';
 import { useLanguage } from '../contexts/LanguageContext';
+import { Calendar } from 'lucide-react';
 
 interface HomeViewProps {
   onCaptureClick: (capture: Capture) => void;
@@ -47,12 +48,97 @@ export default function HomeView({ onCaptureClick, onCaptureEdit, refreshTrigger
   const filteredCaptures = filter === 'all' 
     ? captures 
     : captures.filter(c => c.type === filter);
+
+  // Compute this calendar week range (Monday to Sunday)
+  const now = new Date();
+  const currentDay = now.getDay();
+  const daysToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+  const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysToMonday);
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  endOfWeek.setHours(23, 59, 59, 999);
+
+  const startOfWeekTs = startOfWeek.getTime();
+  const endOfWeekTs = endOfWeek.getTime();
+
+  const upcomingCaptures = captures.filter(c => {
+    if (!c.reminderDate) return false;
+    return c.reminderDate >= startOfWeekTs && c.reminderDate <= endOfWeekTs;
+  });
     
   const stats = {
     note: captures.filter(c => c.type === 'note').length,
     photo: captures.filter(c => c.type === 'photo').length,
     voice: captures.filter(c => c.type === 'voice').length,
     video: captures.filter(c => c.type === 'video').length,
+  };
+
+  const renderCard = (capture: Capture) => {
+    const dateStr = new Date(capture.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    if (capture.type === 'note') {
+      return (
+        <NoteCard 
+          key={capture.id}
+          title={capture.title}
+          preview={capture.content}
+          timestamp={dateStr}
+          mapName={getMapName(capture.mapId)}
+          onClick={() => onCaptureClick(capture)}
+          onEdit={() => onCaptureEdit(capture)}
+          reminderDate={capture.reminderDate}
+        />
+      );
+    }
+    if (capture.type === 'photo') {
+      return (
+        <PhotoCard 
+          key={capture.id}
+          imageSrc={capture.content || 'https://via.placeholder.com/400x200?text=Image+Unavailable'}
+          title={capture.title}
+          caption={capture.description || t('Photo')}
+          timestamp={dateStr}
+          mapName={getMapName(capture.mapId)}
+          hasVoice={!!capture.audioContent}
+          onClick={() => onCaptureClick(capture)}
+          onEdit={() => onCaptureEdit(capture)}
+          reminderDate={capture.reminderDate}
+        />
+      );
+    }
+    if (capture.type === 'video') {
+      return (
+        <VideoCard 
+          key={capture.id}
+          videoSrc={capture.content}
+          title={capture.title}
+          caption={capture.description || t('Video')}
+          timestamp={dateStr}
+          mapName={getMapName(capture.mapId)}
+          onClick={() => onCaptureClick(capture)}
+          onEdit={() => onCaptureEdit(capture)}
+          reminderDate={capture.reminderDate}
+        />
+      );
+    }
+    if (capture.type === 'voice') {
+      return (
+        <VoiceCard 
+          key={capture.id}
+          title={capture.title}
+          duration={t('Voice Memo')}
+          timestamp={dateStr}
+          mapName={getMapName(capture.mapId)}
+          audioContent={capture.audioContent}
+          onClick={() => onCaptureClick(capture)}
+          onEdit={() => onCaptureEdit(capture)}
+          reminderDate={capture.reminderDate}
+        />
+      );
+    }
+    return null;
   };
 
   if (captures.length === 0) {
@@ -93,79 +179,21 @@ export default function HomeView({ onCaptureClick, onCaptureEdit, refreshTrigger
           {stats.video} Videos
         </button>
       </div>
-      
 
+      {upcomingCaptures.length > 0 && (
+        <div className="flex flex-col gap-3 bg-[#111] border border-[#222] p-4 rounded-[24px] shadow-lg">
+          <div className="flex items-center gap-2 text-accent text-xs font-bold uppercase tracking-wider px-1">
+            <Calendar size={14} className="text-[#FFD000]" />
+            <span>{t('Upcoming (Due This Week)')}</span>
+          </div>
+          <div className="flex flex-col gap-4">
+            {upcomingCaptures.map(renderCard)}
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-col gap-4">
-        {filteredCaptures.map((capture) => {
-          const dateStr = new Date(capture.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          
-          if (capture.type === 'note') {
-            return (
-              <NoteCard 
-                key={capture.id}
-                title={capture.title}
-                preview={capture.content}
-                timestamp={dateStr}
-                mapName={getMapName(capture.mapId)}
-                onClick={() => {
-                  onCaptureClick(capture);
-                }}
-                onEdit={() => onCaptureEdit(capture)}
-              />
-            );
-          }
-          if (capture.type === 'photo') {
-            return (
-              <PhotoCard 
-                key={capture.id}
-                imageSrc={capture.content || 'https://via.placeholder.com/400x200?text=Image+Unavailable'}
-                title={capture.title}
-                caption={capture.description || t('Photo')}
-                timestamp={dateStr}
-                mapName={getMapName(capture.mapId)}
-                hasVoice={!!capture.audioContent}
-                onClick={() => {
-                  onCaptureClick(capture);
-                }}
-                onEdit={() => onCaptureEdit(capture)}
-              />
-            );
-          }
-          if (capture.type === 'video') {
-            return (
-              <VideoCard 
-                key={capture.id}
-                videoSrc={capture.content}
-                title={capture.title}
-                caption={capture.description || t('Video')}
-                timestamp={dateStr}
-                mapName={getMapName(capture.mapId)}
-                onClick={() => {
-                  onCaptureClick(capture);
-                }}
-                onEdit={() => onCaptureEdit(capture)}
-              />
-            );
-          }
-          if (capture.type === 'voice') {
-            return (
-              <VoiceCard 
-                key={capture.id}
-                title={capture.title}
-                duration={t('Voice Memo')}
-                timestamp={dateStr}
-                mapName={getMapName(capture.mapId)}
-                audioContent={capture.audioContent}
-                onClick={() => {
-                  onCaptureClick(capture);
-                }}
-                onEdit={() => onCaptureEdit(capture)}
-              />
-            );
-          }
-          return null;
-        })}
+        {filteredCaptures.map(renderCard)}
       </div>
     </div>
   );

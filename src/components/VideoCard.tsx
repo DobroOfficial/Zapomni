@@ -1,5 +1,5 @@
 import React from 'react';
-import { Video, Play } from 'lucide-react';
+import { Video, Play, Calendar } from 'lucide-react';
 import { useLongPress } from '../hooks/useLongPress';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -12,9 +12,10 @@ export interface VideoCardProps {
   mapName: string;
   onClick?: () => void;
   onEdit?: () => void;
+  reminderDate?: number;
 }
 
-export default function VideoCard({ videoSrc, title, caption, timestamp, mapName, onClick, onEdit }: VideoCardProps) {
+export default function VideoCard({ videoSrc, title, caption, timestamp, mapName, onClick, onEdit, reminderDate }: VideoCardProps) {
   const { t } = useLanguage();
   const longPressProps = useLongPress({
     onLongPress: () => onEdit?.(),
@@ -52,8 +53,16 @@ export default function VideoCard({ videoSrc, title, caption, timestamp, mapName
           <h3 className="font-sans font-bold text-sm text-white truncate">{title}</h3>
           <p className="text-preview-text text-[11px] truncate">{caption}</p>
         </div>
-        <div className="bg-[#222] inline-block w-fit px-2.5 py-1 rounded-[99px] text-white/50 text-[10px] font-semibold">
-          {mapName}
+        <div className="flex justify-between items-center mt-1">
+          <div className="bg-[#222] inline-block w-fit px-2.5 py-1 rounded-[99px] text-white/50 text-[10px] font-semibold">
+            {mapName}
+          </div>
+          {reminderDate && (
+            <div className="flex items-center gap-1.5 bg-accent/10 px-2 py-0.5 rounded-full text-accent text-[10px] font-semibold">
+              <Calendar size={11} className="text-[#FFD000]" />
+              <span>{new Date(reminderDate).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

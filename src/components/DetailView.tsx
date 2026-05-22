@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, ArrowLeft, Trash2, MapPin, Play, Volume2, Maximize2, ChevronLeft, ChevronRight, PenTool } from 'lucide-react';
 import { Capture, MapData } from '../types';
@@ -44,6 +44,19 @@ export default function DetailView({ capture, maps, onClose, onDelete, onUpdate,
     return Math.abs(offset) * velocity;
   };
 
+  const handleNoteClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (capture?.type !== 'note') return;
+    const target = e.target as HTMLElement;
+    if (target.classList.contains('checklist-box')) {
+      if (target.innerText === '☐') {
+        target.innerText = '☑';
+      } else {
+        target.innerText = '☐';
+      }
+      onUpdate({ ...capture, content: e.currentTarget.innerHTML });
+    }
+  };
+
   if (!capture) return null;
 
   const playAudio = () => {
@@ -63,6 +76,14 @@ export default function DetailView({ capture, maps, onClose, onDelete, onUpdate,
 
   return (
     <>
+      <style>{`
+        .editor-content h1 { font-size: 2rem; font-weight: 800; margin-top: 0.5em; margin-bottom: 0.25em; line-height: 1.2; }
+        .editor-content h2 { font-size: 1.5rem; font-weight: 700; margin-top: 0.5em; margin-bottom: 0.25em; line-height: 1.3; }
+        .editor-content ul { list-style-type: disc; padding-left: 1.5em; margin-top: 0.5em; margin-bottom: 0.5em; }
+        .editor-content li { margin-bottom: 0.25em; }
+        .checklist-box { font-family: monospace; font-size: 1.2em; display: inline-block; width: 1.2em; text-align: center; cursor: pointer; user-select: none; }
+        .checklist-box:hover { color: #FFD000; }
+      `}</style>
     <motion.div
       initial={{ y: '100%' }}
       animate={{ y: 0 }}
@@ -146,10 +167,16 @@ export default function DetailView({ capture, maps, onClose, onDelete, onUpdate,
           )}
 
           <div 
-            className={`${capture.type === 'note' ? 'text-[16px] leading-[1.6] text-white/90 flex-1' : 'text-preview-text leading-[1.6] mb-8'} whitespace-pre-wrap break-words min-w-0 max-w-full`}
+            className={`${capture.type === 'note' ? 'text-[16px] leading-[1.6] text-white/90 flex-1 editor-content' : 'text-preview-text leading-[1.6] mb-8'} whitespace-pre-wrap break-words min-w-0 max-w-full`}
             style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}
           >
-            {capture.type === 'note' ? capture.content : (capture.description || 'No description provided.')}
+            {capture.type === 'note' ? (
+              <div 
+                dangerouslySetInnerHTML={{ __html: capture.content }} 
+                onClick={handleNoteClick} 
+                className="cursor-default"
+              />
+            ) : (capture.description || 'No description provided.')}
           </div>
 
           <div className={`${capture.type === 'note' ? 'mt-auto pt-6 border-t border-white/5' : 'pt-4 border-t border-white/5'}`}>
